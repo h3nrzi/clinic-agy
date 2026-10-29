@@ -62,6 +62,7 @@ export interface SupplementaryInsurance {
   name: string;
   code: string;
   coveragePercentOfRemaining: number; // e.g. 0.70 for 70% of remainder
+  fixedDeduction?: number; // 0 if percentage-based, or fixed amount
   ceilingLimit: number; // max cap in Toman
   isDefault: boolean;
 }
