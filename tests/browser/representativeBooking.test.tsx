@@ -21,12 +21,12 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
     const startTime = Date.now();
     render(<App />);
 
-    // 1. Initial State: Click "رزرو نوبت جدید (جریان نماینده)"
-    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید \(جریان نماینده\)/ });
+    // 1. Initial State: Click "رزرو نوبت جدید آنلاین"
+    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
     fireEvent.click(newBookingTab);
 
     // Verify Wizard Header and Step 1
-    expect(screen.getByText('جریان نماینده (FLOW-02)')).toBeDefined();
+    expect(screen.getByRole('navigation', { name: 'مراحل رزرو نوبت' })).toBeDefined();
     expect(screen.getByText('۱. انتخاب شعبه یا نوع ویزیت')).toBeDefined();
 
     // 2. Step 1: Select Online Visit and first service
@@ -135,7 +135,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
     render(<App />);
 
     // Go to booking
-    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید \(جریان نماینده\)/ });
+    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
     fireEvent.click(newBookingTab);
 
     // Step 1 -> Next
@@ -170,7 +170,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
     render(<App />);
 
     // Go to booking
-    fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید \(جریان نماینده\)/ }));
+    fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ }));
     fireEvent.click(screen.getByRole('button', { name: /مرحله بعد: انتخاب پزشک و تقویم/ }));
     const slotBtns = screen.getAllByRole('button', { name: /ساعت/ });
     fireEvent.click(slotBtns[0]);

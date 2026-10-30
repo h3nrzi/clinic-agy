@@ -72,7 +72,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
                 {appointment.trackingCode}
               </span>
               <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-semibold">
-                اتاق ویزیت ویدیویی زنده (FLOW-04)
+                اتاق ویزیت آنلاین
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -98,9 +98,9 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
       </div>
 
       {/* Side-by-Side Dual Column Layout (DEC-FE-02) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="consultation-columns">
         {/* Left Column (5 cols): Video Call Stream & Media Controls */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="consultation-video space-y-4">
           <VideoCallSimulator
             doctorName={doctorName}
             patientName={appointment.patientName}
@@ -129,7 +129,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
         </div>
 
         {/* Right Column (7 cols): Tabs for Clinical Note, Documents, and Details */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="consultation-editor bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           {/* Tab Navigation Headers */}
           <div className="flex items-center border-b border-slate-200 bg-slate-50/80 px-4 pt-3 gap-2 overflow-x-auto text-xs">
             <button
@@ -142,7 +142,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
               }`}
             >
               <ClipboardList className="w-4 h-4" />
-              <span>فرم شرح‌حال ۵ فیلدی (FLOW-04)</span>
+              <span>شرح‌حال و نسخه</span>
             </button>
 
             <button
@@ -174,7 +174,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
 
           {/* Tab Content Body */}
           <div className="p-5 sm:p-6">
-            {activeTab === 'CLINICAL_NOTE' && (
+            <div hidden={activeTab !== 'CLINICAL_NOTE'}>
               <ClinicalNoteForm
                 appointmentId={appointment.id}
                 patientName={appointment.patientName}
@@ -182,7 +182,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
                 onSave={handleSaveClinicalNote}
                 isCompleted={appointment.status === 'COMPLETED'}
               />
-            )}
+            </div>
 
             {activeTab === 'DOCUMENTS' && (
               <div className="space-y-4 text-xs">

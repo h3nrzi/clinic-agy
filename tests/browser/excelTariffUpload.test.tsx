@@ -48,7 +48,7 @@ describe('WP-05: 2-Sheet Excel Tariff Upload & Diff Preview (FLOW-06, AC-07, DEC
     // Verify Tab 2 is active
     expect(screen.getByText(/آپلود و تحلیل فایل اکسل تعرفه‌ها/)).toBeDefined();
 
-    // Click "بارگذاری داده نمونه ماک ۲ شیتی (DEC-FE-03)"
+    // Click "بارگذاری داده نمونه ماک ۲ شیتی"
     const loadMockBtn = screen.getByRole('button', { name: /بارگذاری داده نمونه ماک ۲ شیتی/ });
     fireEvent.click(loadMockBtn);
 

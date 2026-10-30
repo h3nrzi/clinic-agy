@@ -43,7 +43,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-right text-xs">
+        <table className="reception-table w-full text-right text-xs">
           <thead className="bg-slate-50/80 text-slate-600 border-b border-slate-200 font-bold select-none">
             <tr>
               <th className="p-3.5 whitespace-nowrap">کد رهگیری</th>
@@ -70,7 +70,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   className="hover:bg-slate-50/70 transition duration-150 group"
                 >
                   {/* Tracking Code */}
-                  <td className="p-3.5 font-mono font-bold text-slate-800 whitespace-nowrap">
+                  <td data-label="کد رهگیری" className="p-3.5 font-mono font-bold text-slate-800 whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => onOpenDrawer(app)}
@@ -82,23 +82,23 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   </td>
 
                   {/* Patient */}
-                  <td className="p-3.5 whitespace-nowrap">
+                  <td data-label="بیمار" className="p-3.5 whitespace-nowrap">
                     <div className="font-bold text-slate-900">{app.patientName}</div>
                     <div className="text-[11px] text-slate-400 font-mono mt-0.5">{app.patientMobile}</div>
                   </td>
 
                   {/* Doctor */}
-                  <td className="p-3.5 whitespace-nowrap text-slate-800 font-medium">
+                  <td data-label="پزشک" className="p-3.5 whitespace-nowrap text-slate-800 font-medium">
                     {app.doctorName}
                   </td>
 
                   {/* Service */}
-                  <td className="p-3.5 whitespace-nowrap text-slate-600 max-w-[180px] truncate">
+                  <td data-label="خدمت" className="p-3.5 whitespace-nowrap text-slate-600 max-w-[180px] truncate">
                     {app.serviceName}
                   </td>
 
                   {/* Branch / Type */}
-                  <td className="p-3.5 whitespace-nowrap">
+                  <td data-label="نوع نوبت" className="p-3.5 whitespace-nowrap">
                     {app.branchId === 'ONLINE' ? (
                       <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
                         <Video className="w-3 h-3" /> آنلاین
@@ -111,17 +111,17 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   </td>
 
                   {/* Time */}
-                  <td className="p-3.5 whitespace-nowrap text-slate-600">
+                  <td data-label="زمان" className="p-3.5 whitespace-nowrap text-slate-600">
                     {formatDateTime(app.dateTime)}
                   </td>
 
                   {/* Initial Paid */}
-                  <td className="p-3.5 whitespace-nowrap font-bold text-slate-800">
+                  <td data-label="پرداخت اولیه" className="p-3.5 whitespace-nowrap font-bold text-slate-800">
                     {formatToman(app.initialPatientPaid)}
                   </td>
 
                   {/* Financial Status */}
-                  <td className="p-3.5 whitespace-nowrap">
+                  <td data-label="وضعیت مالی" className="p-3.5 whitespace-nowrap">
                     {isIndebted ? (
                       <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
                         بدهکار ({formatToman(Math.abs(app.debtOrCreditBalance))})
@@ -138,7 +138,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   </td>
 
                   {/* Lock Status */}
-                  <td className="p-3.5 whitespace-nowrap">
+                  <td data-label="ورود به ویزیت" className="p-3.5 whitespace-nowrap">
                     {app.isSoftLocked ? (
                       <span className="inline-flex items-center gap-1 text-rose-600 font-bold bg-rose-50 border border-rose-200 px-2 py-0.5 rounded text-[11px]">
                         <Lock className="w-3 h-3" /> قفل نرم فعال
@@ -158,7 +158,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   </td>
 
                   {/* Documents count */}
-                  <td className="p-3.5 whitespace-nowrap text-center">
+                  <td data-label="مدارک" className="p-3.5 whitespace-nowrap text-center">
                     {app.documents.length > 0 ? (
                       <button
                         type="button"
@@ -174,7 +174,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   </td>
 
                   {/* Actions */}
-                  <td className="p-3.5 whitespace-nowrap text-center">
+                  <td data-label="عملیات" className="p-3.5 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <button
                         type="button"

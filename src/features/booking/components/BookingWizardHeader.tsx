@@ -23,7 +23,7 @@ export const BookingWizardHeader: React.FC<Props> = ({ currentStep, onStepClick 
         <div>
           <div className="flex items-center gap-2">
             <span className="bg-teal-50 text-teal-700 border border-teal-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              جریان نماینده (FLOW-02)
+              رزرو نوبت
             </span>
             <span className="text-slate-400 text-xs">•</span>
             <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
@@ -36,7 +36,7 @@ export const BookingWizardHeader: React.FC<Props> = ({ currentStep, onStepClick 
       </div>
 
       {/* Stepper progress indicator */}
-      <nav aria-label="مراحل رزرو نوبت" className="grid grid-cols-4 gap-2 sm:gap-4">
+      <nav aria-label="مراحل رزرو نوبت" className="booking-steps">
         {STEPS.map((s) => {
           const isCompleted = numericStep > s.id;
           const isCurrent = numericStep === s.id;
@@ -46,6 +46,8 @@ export const BookingWizardHeader: React.FC<Props> = ({ currentStep, onStepClick 
             <button
               key={s.id}
               type="button"
+              aria-current={isCurrent ? 'step' : undefined}
+              aria-label={`${s.title}${isCompleted ? '، تکمیل‌شده' : isCurrent ? '، مرحله جاری' : '، مرحله بعد'}`}
               disabled={!isClickable}
               onClick={() => isClickable && onStepClick(s.id)}
               className={`flex items-center gap-2 p-2 rounded-lg text-right transition border ${
@@ -67,7 +69,7 @@ export const BookingWizardHeader: React.FC<Props> = ({ currentStep, onStepClick 
               >
                 {isCompleted ? <Check className="w-3.5 h-3.5" /> : s.id}
               </div>
-              <span className="text-xs font-medium truncate hidden md:inline">
+              <span className="text-xs font-medium">
                 {s.title}
               </span>
             </button>

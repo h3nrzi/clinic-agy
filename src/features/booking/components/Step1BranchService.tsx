@@ -41,6 +41,7 @@ export const Step1BranchService: React.FC = () => {
             return (
               <button
                 key={b.id}
+                aria-pressed={isSelected}
                 type="button"
                 onClick={() => handleBranchSelect(b.id)}
                 className={`p-4 rounded-xl text-right border-2 transition relative flex flex-col justify-between ${
@@ -92,6 +93,7 @@ export const Step1BranchService: React.FC = () => {
             return (
               <button
                 key={srv.id}
+                aria-pressed={isSelected}
                 type="button"
                 onClick={() => handleServiceSelect(srv)}
                 className={`p-4 rounded-xl text-right border-2 transition flex items-center justify-between gap-4 ${

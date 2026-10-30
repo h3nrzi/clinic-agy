@@ -56,7 +56,7 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
     expect(screen.queryByLabelText('مشاهده و زوم مدارک پزشکی')).toBeNull();
 
     // 4. Return to Clinical Note Tab and fill all 5 fields
-    const noteTabBtn = screen.getByRole('button', { name: /فرم شرح‌حال ۵ فیلدی/ });
+    const noteTabBtn = screen.getByRole('button', { name: /شرح‌حال و نسخه/ });
     fireEvent.click(noteTabBtn);
 
     // Use Quick Populate for AC-05 values

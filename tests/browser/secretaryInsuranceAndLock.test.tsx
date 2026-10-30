@@ -24,7 +24,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     const secretaryTehranBtn = screen.getByRole('button', { name: /منشی تهران/ });
     fireEvent.click(secretaryTehranBtn);
 
-    // Verify Secretary Dashboard (SCREEN-05) renders
+    // Verify Secretary Dashboard پذیرش renders
     expect(screen.getByText(/میز کار پذیرش شعبه مرکزی تهران/)).toBeDefined();
     expect(screen.getByText('AGY-10142')).toBeDefined(); // App-1 (Ali Rezaei, Online)
 
@@ -93,7 +93,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     fireEvent.click(emergencyUnlockBtns[0]);
 
     // Verify Emergency Unlock Dialog opens
-    expect(screen.getByText(/بازگشایی اضطراری قفل ورود به جلسه \(AC-04\)/)).toBeDefined();
+    expect(screen.getByText(/بازگشایی اضطراری قفل ورود به جلسه/)).toBeDefined();
     expect(screen.getByText(/قاعدهٔ حاکمیتی:/)).toBeDefined();
 
     // Submit emergency unlock
@@ -101,7 +101,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     fireEvent.click(confirmUnlockBtn);
 
     await waitFor(() => {
-      expect(screen.queryByText(/بازگشایی اضطراری قفل ورود به جلسه \(AC-04\)/)).toBeNull();
+      expect(screen.queryByText(/بازگشایی اضطراری قفل ورود به جلسه/)).toBeNull();
     });
 
     // Verify repository state: soft lock is lifted, emergencyUnlocked is true

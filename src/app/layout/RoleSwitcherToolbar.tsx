@@ -61,7 +61,7 @@ export const RoleSwitcherToolbar: React.FC = () => {
   return (
     <aside 
       aria-label="نوار ابزار دمو و سناریو"
-      className="fixed top-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-md text-white border-b border-slate-700/80 shadow-xl transition-all duration-300"
+      className="demo-toolbar relative z-50 bg-slate-900/95 backdrop-blur-md text-white border-b border-slate-700/80 shadow-xl transition-all duration-300"
     >
       <div className="max-w-7xl mx-auto px-4 py-2">
         <div className="flex items-center justify-between gap-2">
@@ -84,6 +84,7 @@ export const RoleSwitcherToolbar: React.FC = () => {
           {/* Quick controls */}
           <div className="flex items-center gap-2">
             <button
+              aria-expanded={!isCollapsed}
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="flex items-center gap-1 text-xs text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 px-2.5 py-1 rounded transition border border-slate-700"
               title={isCollapsed ? 'گسترش نوار دمو' : 'جمع کردن نوار دمو'}

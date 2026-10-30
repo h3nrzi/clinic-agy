@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Save,
-  CheckCircle2,
   AlertCircle,
   ShieldAlert,
   Sparkles,
@@ -38,18 +37,6 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [lastAutoSavedTime, setLastAutoSavedTime] = useState<string | null>(null);
-
-  // Auto-save draft effect
-  useEffect(() => {
-    if (!hasUnsavedChanges) return;
-    const timer = setTimeout(() => {
-      setLastAutoSavedTime(new Date().toLocaleTimeString('fa-IR'));
-      setHasUnsavedChanges(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [mainComplaint, findings, diagnosis, prescriptions, followUp, hasUnsavedChanges]);
-
   const handleChange = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
     setter(value);
     setHasUnsavedChanges(true);
@@ -73,7 +60,7 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
     setDiagnosis('');
     setPrescriptions('');
     setFollowUp('');
-    setHasUnsavedChanges(false);
+    setHasUnsavedChanges(true);
     setValidationError(null);
   };
 
@@ -94,16 +81,16 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 text-xs">
+    <form onSubmit={handleSubmit} className="clinical-form space-y-5 text-xs">
       {/* Header with RBAC notice */}
-      <div className="bg-gradient-to-r from-teal-50 to-indigo-50 border border-teal-200/80 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-teal-50 border border-teal-200/80 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h4 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
             <ClipboardList className="w-4 h-4 text-teal-600" />
-            <span>فرم شرح‌حال ۵ فیلدی استاندارد پزشکی (FLOW-04)</span>
+            <span>یادداشت بالینی و نسخه</span>
           </h4>
           <p className="text-[11px] text-slate-500 mt-0.5">
-            پروندهٔ بالینی بیمار: <strong>{patientName}</strong> • مشمول قانون محرمانگی داده‌ها (AC-05)
+            پروندهٔ بالینی بیمار: <strong>{patientName}</strong>
           </p>
         </div>
 
@@ -123,6 +110,7 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
             type="button"
             onClick={handleResetForm}
             className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white rounded-lg transition"
+            aria-label="پاک‌کردن فرم"
             title="پاک‌کردن فرم"
           >
             <RotateCcw className="w-4 h-4" />
@@ -134,16 +122,16 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
       <div className="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3 text-indigo-900 flex items-start gap-2">
         <ShieldAlert className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
         <div className="space-y-1 text-[11px] leading-relaxed">
-          <span className="font-bold">ماتریس محرمانگی فیلدها (Field-Level RBAC):</span>
+          <span className="font-bold">چه کسانی این اطلاعات را می‌بینند؟</span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 pt-1 text-[10px]">
             <span className="bg-white/80 px-2 py-0.5 rounded border border-indigo-100">
-              🩺 <strong>پزشک:</strong> دسترسی کامل به هر ۵ فیلد
+              <strong>پزشک:</strong> دسترسی کامل به هر ۵ فیلد
             </span>
             <span className="bg-white/80 px-2 py-0.5 rounded border border-indigo-100">
-              👤 <strong>بیمار:</strong> فقط فیلد ۴ (نسخه) و ۵ (پیگیری)
+              <strong>بیمار:</strong> فقط فیلد ۴ (نسخه) و ۵ (پیگیری)
             </span>
             <span className="bg-white/80 px-2 py-0.5 rounded border border-indigo-100">
-              📋 <strong>منشی:</strong> فقط فیلد ۵ (دستور پیگیری نوبت)
+              <strong>منشی:</strong> فقط فیلد ۵ (دستور پیگیری نوبت)
             </span>
           </div>
         </div>
@@ -151,7 +139,7 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
 
       {/* Error / Validation message */}
       {validationError && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl flex items-center gap-2">
+        <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{validationError}</span>
         </div>
@@ -266,14 +254,8 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
       </div>
 
       {/* Footer Actions */}
-      <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="clinical-save-bar pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-          {lastAutoSavedTime && (
-            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              پیش‌نویس ذخیره شد ({lastAutoSavedTime})
-            </span>
-          )}
           {hasUnsavedChanges && (
             <span className="text-amber-600 font-medium">تغییرات ذخیره‌نشده...</span>
           )}

@@ -1,3 +1,5 @@
+import { useWorkspaceSection } from '@/shared/stores/useWorkspaceStore';
+import { OperationsOverview } from './OperationsOverview';
 import React, { useState, useMemo } from 'react';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { memoryDb } from '@/mocks/db/memoryDb';
@@ -35,7 +37,7 @@ import { BranchId } from '@/shared/types';
 
 export const FinancialDashboard: React.FC = () => {
   const { currentUser, currentRole } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<'FINANCE' | 'TARIFF_EXCEL' | 'SHIFTS' | 'SETTINGS'>('FINANCE');
+  const [activeTab, setActiveTab] = useWorkspaceSection<'FINANCE' | 'TARIFF_EXCEL' | 'SHIFTS' | 'SETTINGS'>('FINANCE');
 
   // Excel state
   const [parseResult, setParseResult] = useState<ParseExcelResult | null>(null);
@@ -233,14 +235,14 @@ export const FinancialDashboard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-slate-900">
-                پنل جامع مدیریت مالی، تعرفه‌ها و تقویم شیفت‌ها (SCREEN-07)
+                مدیریت مالی و عملکرد کلینیک
               </h2>
               <span className="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full border border-indigo-200 font-semibold">
-                بسته WP-05
+                گزارش عملیاتی
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              مدیر مالی / ادمین: <strong>{currentUser.name}</strong> • تسویه حساب پزشکان با فرمول مصوب (AC-08)، آپلود اکسل ۲ شیتی با Diff (AC-07) و کنترل شیفت‌ها (FLOW-05)
+              مدیر مالی / ادمین: <strong>{currentUser.name}</strong> • گزارش کارکرد پزشکان، مدیریت تعرفه‌ها و برنامه‌ریزی شیفت‌ها
             </p>
           </div>
         </div>
@@ -270,7 +272,7 @@ export const FinancialDashboard: React.FC = () => {
           }`}
         >
           <BarChart3 className="w-4 h-4" />
-          <span>داشبورد مالی و سهم پزشکان (FLOW-06 / AC-08)</span>
+          <span>داشبورد مالی و سهم پزشکان</span>
         </button>
 
         <button
@@ -283,7 +285,7 @@ export const FinancialDashboard: React.FC = () => {
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>آپلود اکسل ۲ شیتی و جدول Diff (FLOW-06 / AC-07)</span>
+          <span>آپلود اکسل ۲ شیتی و جدول Diff</span>
         </button>
 
         <button
@@ -296,7 +298,7 @@ export const FinancialDashboard: React.FC = () => {
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>تقویم هفتگی شیفت‌ها (FLOW-05)</span>
+          <span>تقویم هفتگی شیفت‌ها</span>
         </button>
 
         <button
@@ -346,7 +348,7 @@ export const FinancialDashboard: React.FC = () => {
 
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
               <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
-                <span>مالیات ۱۰٪ کسرشده (DEC-FE-03)</span>
+                <span>مالیات کسرشده</span>
                 <Percent className="w-4 h-4 text-amber-600" />
               </div>
               <div className="mt-2 text-2xl font-bold text-amber-700">
@@ -371,13 +373,14 @@ export const FinancialDashboard: React.FC = () => {
             </div>
           </div>
 
+          <OperationsOverview appointments={allAppointments} />
           {/* Doctor Performance & Share Table */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-xs">
             <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <UserCheck className="w-4 h-4 text-teal-600" />
-                  جدول تفکیک کارکرد و سهم مالی پزشکان (فرمول بند ۹.۱ سند مرجع محصول)
+                  جدول تفکیک کارکرد و سهم مالی پزشکان
                 </h3>
                 <p className="text-slate-500 text-xs mt-0.5">
                   فرمول: سهم ناخالص = (مجموع تعرفه خدمت - مواد مصرفی) × درصد توافقی | خالص = ناخالص - مالیات ۱۰٪
@@ -479,7 +482,7 @@ export const FinancialDashboard: React.FC = () => {
                   className="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-xl font-bold transition shadow-xs text-xs"
                 >
                   <FileUp className="w-4 h-4" />
-                  <span>بارگذاری داده نمونه ماک ۲ شیتی (DEC-FE-03)</span>
+                  <span>بارگذاری داده نمونه ماک ۲ شیتی</span>
                 </button>
               </div>
             </div>
@@ -532,7 +535,7 @@ export const FinancialDashboard: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-slate-900 text-sm">
-                      پیش‌نمایش تغییرات و جدول مقایسه‌ای Diff (AC-07)
+                      پیش‌نمایش تغییرات و جدول مقایسه‌ای Diff
                     </h4>
                     <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold text-[11px]">
                       ساختار معتبر ✅

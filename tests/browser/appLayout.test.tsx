@@ -52,7 +52,7 @@ describe('WP-00: App Component & Role Switcher UI Verification', () => {
     fireEvent.click(adminBtn);
 
     expect(screen.getByTestId('financial-dashboard')).toBeDefined();
-    expect(screen.getByText(/پنل جامع مدیریت مالی/)).toBeDefined();
+    expect(screen.getByText(/مدیریت مالی و عملکرد کلینیک/)).toBeDefined();
     expect(screen.getByText('کل درآمد ناخالص خدمات')).toBeDefined();
     expect(screen.getByText('مجموع سهم ناخالص پزشکان')).toBeDefined();
   });

@@ -1,3 +1,4 @@
+import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
 import React from 'react';
 import { Appointment, PatientDocument } from '@/shared/types';
 import { formatToman, formatDateTime, toPersianDigits } from '@/shared/utils/formatters';
@@ -35,6 +36,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
   onOpenEmergencyUnlock,
   onViewDocument,
 }) => {
+  const dialogRef = useDialogFocus(onClose, isOpen && !!app);
   if (!isOpen || !app) return null;
 
   const isIndebted = app.financialStatus === 'DEBIT';
@@ -42,6 +44,8 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label="جزئیات پرونده و نوبت بیمار"

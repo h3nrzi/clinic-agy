@@ -1,3 +1,4 @@
+import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
 import React, { useState } from 'react';
 import { PatientDocument } from '@/shared/types';
 import { formatDateTime } from '@/shared/utils/formatters';
@@ -14,6 +15,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const dialogRef = useDialogFocus(onClose, isOpen && !!doc);
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
 
@@ -37,6 +39,8 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label="مشاهده و زوم مدارک پزشکی"

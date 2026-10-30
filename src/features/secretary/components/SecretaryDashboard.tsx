@@ -1,3 +1,4 @@
+import { useWorkspaceSection } from '@/shared/stores/useWorkspaceStore';
 import React, { useState, useEffect, useMemo } from 'react';
 import { PatientDocument } from '@/shared/types';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
@@ -36,7 +37,7 @@ export const SecretaryDashboard: React.FC = () => {
   }, []);
 
   // Section state (Appointments Desk vs Doctor Leaves Management)
-  const [activeSection, setActiveSection] = useState<'APPOINTMENTS' | 'DOCTOR_LEAVES'>('APPOINTMENTS');
+  const [activeSection, setActiveSection] = useWorkspaceSection<'APPOINTMENTS' | 'DOCTOR_LEAVES'>('APPOINTMENTS');
 
   // Filter state
   const isTehranSecretary = currentRole === 'SECRETARY_TEHRAN';
@@ -126,7 +127,7 @@ export const SecretaryDashboard: React.FC = () => {
                 میز کار پذیرش {isTehranSecretary ? 'شعبه مرکزی تهران' : 'شعبه شمس‌آبادی اصفهان'}
               </span>
               <span className="bg-teal-50 text-teal-700 text-xs px-2.5 py-0.5 rounded-full border border-teal-200">
-                (SCREEN-05)
+                پذیرش
               </span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -209,7 +210,7 @@ export const SecretaryDashboard: React.FC = () => {
             <div>
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-teal-600" />
-                کارتابل بررسی و تایید مرخصی پزشکان (FLOW-05, S17)
+                کارتابل بررسی و تایید مرخصی پزشکان
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 بررسی تداخل نوبت‌ها، تأیید/رد مرخصی و اجرای لغو یا جابجایی توسط کلینیک با بازگشت ۱۰۰٪ وجه
@@ -341,7 +342,7 @@ export const SecretaryDashboard: React.FC = () => {
           <div className="mt-2 text-2xl font-bold text-slate-900">
             {toPersianDigits(totalCount)} نوبت
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">امروز و شیفت فعال</div>
+          <div className="text-[11px] text-slate-400 mt-1">تمام تاریخ‌ها در محدوده انتخاب‌شده</div>
         </div>
 
         {/* Online Appointments */}
@@ -353,13 +354,13 @@ export const SecretaryDashboard: React.FC = () => {
           <div className="mt-2 text-2xl font-bold text-slate-900">
             {toPersianDigits(onlineCount)} جلسه
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">ارتباط وب‌آرتی‌سی زنده</div>
+          <div className="text-[11px] text-slate-400 mt-1">نوبت‌های مشاوره تصویری</div>
         </div>
 
         {/* Soft-Locked Appointments */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>قفل نرم بدهکاری (AC-03)</span>
+            <span>محدودیت ورود به ویزیت</span>
             <Lock className="w-4 h-4 text-rose-600" />
           </div>
           <div

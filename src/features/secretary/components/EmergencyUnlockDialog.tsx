@@ -1,3 +1,4 @@
+import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
 import React, { useState } from 'react';
 import { Appointment } from '@/shared/types';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
@@ -25,6 +26,7 @@ export const EmergencyUnlockDialog: React.FC<EmergencyUnlockDialogProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const dialogRef = useDialogFocus(onClose, isOpen && !!appointment);
   const { currentUser, currentRole } = useAuthStore();
   const [reason, setReason] = useState('هماهنگی تلفنی جهت تسویه بدهی در پایان روز');
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +64,8 @@ export const EmergencyUnlockDialog: React.FC<EmergencyUnlockDialogProps> = ({
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-labelledby="emergency-dialog-title"
@@ -76,7 +80,7 @@ export const EmergencyUnlockDialog: React.FC<EmergencyUnlockDialogProps> = ({
             </div>
             <div>
               <h3 id="emergency-dialog-title" className="text-sm font-bold text-slate-900">
-                بازگشایی اضطراری قفل ورود به جلسه (AC-04)
+                بازگشایی اضطراری قفل ورود به جلسه
               </h3>
               <p className="text-xs text-amber-800 mt-0.5">
                 توسط منشی پذیرش: <strong>{currentUser.name}</strong>

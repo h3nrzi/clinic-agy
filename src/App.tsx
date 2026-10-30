@@ -1,4 +1,5 @@
 import React from 'react';
+import { WorkspaceSidebar } from '@/app/layout/WorkspaceSidebar';
 import { RoleSwitcherToolbar } from '@/app/layout/RoleSwitcherToolbar';
 import { Navbar } from '@/app/layout/Navbar';
 import { AppLayout } from '@/app/layout/AppLayout';
@@ -11,9 +12,10 @@ export const App: React.FC = () => {
 
       {/* 2. Clinic Navbar with current user state */}
       <Navbar />
+      <WorkspaceSidebar />
 
       {/* 3. Core App Layout and Active Role Workspaces */}
-      <div className="flex-1">
+      <div className="flex-1 workspace-content" id="workspace">
         <AppLayout />
       </div>
 
@@ -21,10 +23,10 @@ export const App: React.FC = () => {
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4">
           <p>
-            کلینیک سلامت آژی — نمونهٔ آزمایشی فرانت‌اند فاز ۲ (بدون وابستگی به سرور واقعی)
+            کلینیک سلامت آژی • مراقبت یکپارچه و مدیریت شفاف
           </p>
           <p className="mt-1 text-[11px] text-slate-400">
-            توسعه‌یافته بر اساس استک React 19 + TypeScript + Tailwind RTL + Zustand + Memory DB
+            محیط نمایشی با داده‌های ساختگی • پرداخت و پیامک شبیه‌سازی‌شده
           </p>
         </div>
       </footer>

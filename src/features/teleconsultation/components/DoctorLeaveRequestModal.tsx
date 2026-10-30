@@ -1,3 +1,4 @@
+import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
 import React, { useState } from 'react';
 import { scheduleRepository } from '@/mocks/repositories/scheduleRepository';
 import { DoctorLeave } from '@/shared/types';
@@ -16,6 +17,8 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
   onClose,
   onRequestSubmitted,
 }) => {
+  const dialogRef = useDialogFocus(onClose);
+  const [error, setError] = useState('');
   const [startDate, setStartDate] = useState('2026-11-08');
   const [endDate, setEndDate] = useState('2026-11-09');
   const [reason, setReason] = useState('مرخصی شخصی جهت حضور در همایش علمی');
@@ -25,7 +28,7 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!startDate || !endDate || !reason.trim()) {
-      alert('لطفاً تمامی فیلدهای الزامی را تکمیل کنید.');
+      setError('لطفاً تمامی فیلدهای الزامی را تکمیل کنید.');
       return;
     }
 
@@ -41,7 +44,7 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
       setSuccess(true);
       onRequestSubmitted(created);
     } catch (err: any) {
-      alert(err.message || 'خطا در ثبت درخواست مرخصی');
+      setError(err.message || 'خطا در ثبت درخواست مرخصی');
     } finally {
       setIsSubmitting(false);
     }
@@ -49,12 +52,15 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-labelledby="leave-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
     >
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-right animate-in fade-in zoom-in-95 duration-150">
+        {error && <p role="alert" className="bg-rose-50 text-rose-700 p-3 rounded-lg">{error}</p>}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">

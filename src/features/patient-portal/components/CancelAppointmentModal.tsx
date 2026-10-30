@@ -1,3 +1,4 @@
+import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
 import React, { useState } from 'react';
 import { Appointment } from '@/shared/types';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
@@ -22,6 +23,8 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
   onClose,
   onCancelled,
 }) => {
+  const dialogRef = useDialogFocus(onClose);
+  const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancellationDone, setCancellationDone] = useState(false);
   const [resultMessage, setResultMessage] = useState('');
@@ -41,7 +44,7 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
       setCancellationDone(true);
       setResultMessage(res.evaluation.message);
     } catch (err: any) {
-      alert(err.message || 'خطا در لغو نوبت');
+      setError(err.message || 'خطا در لغو نوبت');
     } finally {
       setIsSubmitting(false);
     }
@@ -49,12 +52,15 @@ export const CancelAppointmentModal: React.FC<CancelAppointmentModalProps> = ({
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-labelledby="cancel-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
     >
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 text-right animate-in fade-in zoom-in-95 duration-150">
+        {error && <p role="alert" className="bg-rose-50 text-rose-700 p-3 rounded-lg">{error}</p>}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <div

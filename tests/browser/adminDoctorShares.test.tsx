@@ -33,7 +33,7 @@ describe('WP-05: Admin Financial Dashboard & Doctor Share Formula (FLOW-06, AC-0
     expect(screen.getByTestId('financial-dashboard')).toBeDefined();
     expect(screen.getByText('کل درآمد ناخالص خدمات')).toBeDefined();
     expect(screen.getByText('مجموع سهم ناخالص پزشکان')).toBeDefined();
-    expect(screen.getByText('مالیات ۱۰٪ کسرشده (DEC-FE-03)')).toBeDefined();
+    expect(screen.getByText('مالیات کسرشده')).toBeDefined();
     expect(screen.getByText('خالص پرداختی به پزشکان')).toBeDefined();
 
     // Verify doctors are in the table

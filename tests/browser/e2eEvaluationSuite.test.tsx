@@ -35,7 +35,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     const bookingStartTime = Date.now();
 
     // Start New Booking
-    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید \(جریان نماینده\)/ });
+    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
     fireEvent.click(newBookingTab);
 
     // Step 1: Branch selection -> Online Telemedicine
@@ -119,7 +119,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     // Confirm emergency unlock with reason
     fireEvent.click(screen.getByRole('button', { name: /تایید و بازگشایی اضطراری/ }));
     await waitFor(() => {
-      expect(screen.queryByText(/بازگشایی اضطراری قفل ورود به جلسه \(AC-04\)/)).toBeNull();
+      expect(screen.queryByText(/بازگشایی اضطراری قفل ورود به جلسه/)).toBeNull();
     });
 
     // =========================================================================
@@ -138,7 +138,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     expect(screen.getByTestId('video-call-simulator')).toBeDefined();
 
     // Fill 5-Field Clinical Note
-    fireEvent.click(screen.getByRole('button', { name: /فرم شرح‌حال ۵ فیلدی/ }));
+    fireEvent.click(screen.getByRole('button', { name: /شرح‌حال و نسخه/ }));
     fireEvent.click(screen.getByRole('button', { name: /درج سناریوی AC-05/ }));
 
     // Submit clinical note
@@ -225,7 +225,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     // Verify Doctor Share Calculations with 10% tax in Admin Dashboard (AC-08)
     expect(screen.getByText('کل درآمد ناخالص خدمات')).toBeDefined();
     expect(screen.getByText('مجموع سهم ناخالص پزشکان')).toBeDefined();
-    expect(screen.getByText('مالیات ۱۰٪ کسرشده (DEC-FE-03)')).toBeDefined();
+    expect(screen.getByText('مالیات کسرشده')).toBeDefined();
     expect(screen.getByText('خالص پرداختی به پزشکان')).toBeDefined();
     expect(screen.getAllByText('دکتر مریم احمدی').length).toBeGreaterThanOrEqual(1);
 
@@ -242,8 +242,8 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     render(<App />);
 
     // Step 1: Open Wizard
-    fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید \(جریان نماینده\)/ }));
-    expect(screen.getByText('جریان نماینده (FLOW-02)')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ }));
+    expect(screen.getByRole('navigation', { name: 'مراحل رزرو نوبت' })).toBeDefined();
 
     // Select branch -> Online
     fireEvent.click(screen.getByText('سامانه ویزیت آنلاین و تله‌مدیسین آژی'));

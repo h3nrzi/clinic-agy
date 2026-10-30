@@ -1,6 +1,6 @@
+import { useWorkspaceSection } from '@/shared/stores/useWorkspaceStore';
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
-import { useScenarioStore } from '@/shared/stores/useScenarioStore';
 import { useBookingStore } from '@/shared/stores/useBookingStore';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
@@ -18,17 +18,14 @@ import {
   PatientConsultationRoom,
 } from '@/features/teleconsultation';
 import {
+  CheckCircle2,
   Calendar,
   CreditCard,
   Video,
   AlertCircle,
-  CheckCircle2,
   Lock,
   Unlock,
-  Layers,
-  Clock,
   Building,
-  Sparkles,
   PlusCircle,
   CalendarCheck,
   XCircle,
@@ -36,10 +33,9 @@ import {
 
 export const AppLayout: React.FC = () => {
   const { currentRole, currentUser } = useAuthStore();
-  const { activeScenario } = useScenarioStore();
   const { step: bookingStep, resetBooking } = useBookingStore();
 
-  const [patientTab, setPatientTab] = useState<'MY_APPOINTMENTS' | 'NEW_BOOKING'>('MY_APPOINTMENTS');
+  const [patientTab, setPatientTab] = useWorkspaceSection<'MY_APPOINTMENTS' | 'NEW_BOOKING'>('MY_APPOINTMENTS');
   const [activePatientConsultationApp, setActivePatientConsultationApp] = useState<Appointment | null>(null);
   const [activeDoctorConsultationApp, setActiveDoctorConsultationApp] = useState<Appointment | null>(null);
   const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
@@ -65,43 +61,12 @@ export const AppLayout: React.FC = () => {
 
   // Patient view calculations
   const patientAppointments = allAppointments.filter((a) => a.patientId === currentUser.id);
+  const nextAppointment = [...patientAppointments].filter(a => a.status === 'CONFIRMED' && new Date(a.dateTime).getTime() > Date.now()).sort((a,b)=>a.dateTime.localeCompare(b.dateTime))[0];
   const patientWallet = walletRepository.getByPatientId(currentUser.id);
   const walletBalance = patientWallet ? patientWallet.balance : 0;
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Scope and Roadmap Banner for Work Packages */}
-      <section
-        aria-label="وضعیت بسته کاری"
-        className="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-xl border border-teal-500/30"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
-              بستهٔ کاری WP-06: آزمون‌های مرورگری E2E و پذیرش نهایی دمو (FLOW-01 تا FLOW-06)
-            </div>
-            <h2 className="text-xl font-bold tracking-tight">
-              پوشش کامل تمامی سناریوهای پذیرش (AC-01 تا AC-08) و آماده برای ارزیابی جامع کارفرما
-            </h2>
-            <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-              تمامی جریان‌های کاری (رزرو آنلاین زیر ۳ دقیقه، اصلاح بیمه، قفل نرم بدهکاری، اتاق ویزیت تصویری، پرونده محرمانه ۵ فیلدی، لغو ۱۲ ساعته، و ماژول مالی اکسل ۲ شیتی) پیاده‌سازی شده و ۵۲ آزمون خودکار را با موفقیت ۱۰۰٪ پشت سر گذاشته‌اند.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-05: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
-            </span>
-            <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-06: <strong className="text-emerald-400">تکمیل و آماده ارزیابی 🟢</strong></span>
-            </span>
-          </div>
-        </div>
-      </section>
-
       {/* Role-Specific Dashboard Content */}
       {currentRole === 'PATIENT' && (
         <div className="space-y-6">
@@ -139,7 +104,7 @@ export const AppLayout: React.FC = () => {
                 }`}
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>رزرو نوبت جدید (جریان نماینده)</span>
+                <span>رزرو نوبت جدید آنلاین</span>
               </button>
             </div>
 
@@ -199,7 +164,7 @@ export const AppLayout: React.FC = () => {
                     </div>
                     <div className="text-xs text-slate-400 mt-1">
                       {walletBalance < 0
-                        ? '⚠️ دارای مانده بدهی — نوبت‌های آنلاین مشمول قفل نرم می‌شوند.'
+                        ? 'دارای مانده بدهی — نوبت‌های آنلاین مشمول قفل نرم می‌شوند.'
                         : walletBalance > 0
                         ? 'دارای بستانکاری قابل کسر از نوبت بعدی'
                         : 'حساب تسویه است (بدون بدهی یا بستانکاری)'}
@@ -226,17 +191,15 @@ export const AppLayout: React.FC = () => {
                 {/* Scenario Status Indicator */}
                 <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-500">حالت سناریوی جاری</span>
+                    <span className="text-xs font-medium text-slate-500">نوبت بعدی</span>
                     <AlertCircle className="w-5 h-5 text-amber-500" />
                   </div>
                   <div className="mt-3">
                     <div className="text-base font-bold text-slate-800">
-                      {activeScenario === 'INDEBTED_PATIENT'
-                        ? '⚠️ بیمار بدهکار (قفل نرم فعال)'
-                        : '✅ حالت عادی (بیمار نرمال)'}
+                      {nextAppointment ? formatDateTime(nextAppointment.dateTime) : 'نوبت پیش رو ندارید'}
                     </div>
                     <div className="text-xs text-slate-400 mt-1">
-                      قابل تعویض با دکمه نوار ابزار دمو در بالای صفحه
+                      {nextAppointment ? nextAppointment.doctorName : 'برای دریافت خدمات، نوبت جدید رزرو کنید'}
                     </div>
                   </div>
                 </div>
@@ -364,7 +327,7 @@ export const AppLayout: React.FC = () => {
                             <div className="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-1.5">
                               <div className="font-semibold text-slate-800 flex items-center gap-1">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                نسخه و توصیه‌های پزشک (رعایت محرمانگی RBAC بیمار):
+                                نسخه و توصیه‌های پزشک:
                               </div>
                               <div className="text-slate-700">
                                 <strong>دارو و نسخه:</strong> {app.clinicalNote.prescriptions}
@@ -373,7 +336,7 @@ export const AppLayout: React.FC = () => {
                                 <strong>دستور پیگیری:</strong> {app.clinicalNote.followUp}
                               </div>
                               <div className="text-[11px] text-slate-400 italic">
-                                (طبق قانون محرمانگی AC-05، فیلدهای معاینه و تشخیص برای بیمار رندر نمی‌شوند.)
+                                اطلاعات این بخش فقط شامل نسخه و دستور پیگیری شماست.
                               </div>
                             </div>
                           )}
@@ -481,81 +444,6 @@ export const AppLayout: React.FC = () => {
         <FinancialDashboard />
       )}
 
-      {/* Work Package Progress Map */}
-      <section aria-label="نقشه بسته‌های کاری" className="bg-slate-100 rounded-xl p-5 border border-slate-200 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold text-slate-700 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-teal-600" />
-            نقشهٔ پیشرفت بسته‌های کاری فرانت‌اند (WBS Execution Matrix)
-          </h3>
-          <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            WP-05 فعال و عملیاتی
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-xs">
-          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
-            <div className="font-bold text-teal-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-teal-600" />
-              WP-00: شالوده و دمو
-            </div>
-            <div className="text-slate-500 text-[11px] mt-1">
-              پایگاه داده حافظه‌ای، استورها، نوار سوییچ ۵ نقشه و کامپوننت دمو.
-            </div>
-          </div>
-
-          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
-            <div className="font-bold text-teal-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-teal-600" />
-              WP-01: منطق مالی
-            </div>
-            <div className="text-slate-500 text-[11px] mt-1">
-              فرمول پلکانی بیمه، سهم پزشک با مالیات ۱۰٪ و تست‌های Vitest.
-            </div>
-          </div>
-
-          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
-            <div className="font-bold text-teal-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-teal-600" />
-              WP-02: جریان نماینده
-            </div>
-            <div className="text-slate-500 text-[11px] mt-1">
-              ویزارد ۴ مرحله‌ای زیر ۳ دقیقه، شبیه‌ساز شاپرک و صدور کد نوبت.
-            </div>
-          </div>
-
-          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
-            <div className="font-bold text-teal-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-teal-600" />
-              WP-03: میز کار منشی
-            </div>
-            <div className="text-slate-500 text-[11px] mt-1">
-              اصلاح دستی بیمه، محاسبه دلتا، مهار قفل نرم و بازگشایی اضطراری.
-            </div>
-          </div>
-
-          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
-            <div className="font-bold text-teal-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-teal-600" />
-              WP-04: کارتابل و ویزیت
-            </div>
-            <div className="text-slate-500 text-[11px] mt-1">
-              اتاق ویزیت ویدیویی زنده، فرم ۵ فیلدی شرح‌حال و تفکیک RBAC.
-            </div>
-          </div>
-
-          <div className="bg-white p-3.5 rounded-lg border border-emerald-500 shadow-sm ring-2 ring-emerald-500/40">
-            <div className="font-bold text-emerald-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              WP-05: تقویم، لغو و اکسل
-            </div>
-            <div className="text-slate-500 text-[11px] mt-1">
-              تقویم و مرخصی، لغو ۱۲ ساعته با کسر ۵۰٪ جریمه و اکسل ۲ شیتی با Diff.
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   );
 };

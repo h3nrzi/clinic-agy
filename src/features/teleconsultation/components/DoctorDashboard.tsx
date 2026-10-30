@@ -1,3 +1,5 @@
+import { DoctorFinancialSummary } from './DoctorFinancialSummary';
+import { useWorkspaceSection } from '@/shared/stores/useWorkspaceStore';
 import React, { useState } from 'react';
 import {
   UserCheck,
@@ -32,7 +34,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   appointments,
   onStartConsultation,
 }) => {
-  const [activeTab, setActiveTab] = useState<'APPOINTMENTS' | 'SHIFTS_AND_LEAVES'>('APPOINTMENTS');
+  const [activeTab, setActiveTab] = useWorkspaceSection<'APPOINTMENTS' | 'SHIFTS_AND_LEAVES'>('APPOINTMENTS');
   const [filterType, setFilterType] = useState<'ALL' | 'ONLINE' | 'COMPLETED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -58,7 +60,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   const totalToday = appointments.length;
   const onlineCount = appointments.filter((a) => a.branchId === 'ONLINE').length;
   const completedCount = appointments.filter((a) => a.status === 'COMPLETED').length;
-  const pendingCount = totalToday - completedCount;
+  const pendingCount = appointments.filter(a => a.status === 'CONFIRMED' || a.status === 'IN_CONSULTATION').length;
 
   return (
     <div
@@ -68,7 +70,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       {/* Doctor Profile Banner */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center text-white shadow-md">
+          <div className="w-14 h-14 rounded-2xl bg-teal-700 flex items-center justify-center text-white shadow-md">
             <UserCheck className="w-7 h-7" />
           </div>
           <div>
@@ -88,7 +90,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           <button
             type="button"
             onClick={() => setShowLeaveModal(true)}
-            className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm"
+            className="inline-flex items-center gap-1.5 bg-teal-700 hover:bg-teal-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm"
           >
             <FilePlus2 className="w-4 h-4" />
             <span>ثبت درخواست مرخصی / تغییر شیفت</span>
@@ -96,11 +98,12 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
           <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            اتاق ویزیت فعال و آماده (WP-04)
+            فضای ویزیت آنلاین
           </span>
         </div>
       </div>
 
+      {currentDoc && <DoctorFinancialSummary doctor={currentDoc} appointments={appointments} />}
       {/* Doctor Navigation Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         <button
@@ -113,7 +116,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>نوبت‌های امروز ({toPersianDigits(appointments.length)})</span>
+          <span>نوبت‌های ثبت‌شده ({toPersianDigits(appointments.length)})</span>
         </button>
 
         <button
@@ -254,7 +257,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           {/* KPI Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
-              <div className="text-xs text-slate-500 font-medium">کل نوبت‌های امروز</div>
+              <div className="text-xs text-slate-500 font-medium">کل نوبت‌های ثبت‌شده</div>
               <div className="text-2xl font-bold text-slate-900 mt-2">{toPersianDigits(totalToday)}</div>
               <div className="text-[11px] text-slate-400 mt-1">حضوری و آنلاین</div>
             </div>
@@ -323,6 +326,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="جستجوی نوبت‌های پزشک"
                 placeholder="جستجوی نام بیمار یا کد رهگیری..."
                 className="w-full pl-3 pr-8 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:border-teal-500 text-xs"
               />
@@ -335,7 +339,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-teal-600" />
-                <span>لیست نوبت‌های کارتابل پزشک (SCREEN-06)</span>
+                <span>کارتابل نوبت‌های پزشک</span>
               </h3>
               <span className="text-xs text-slate-500">
                 نمایش {toPersianDigits(filteredAppointments.length)} از {toPersianDigits(appointments.length)}

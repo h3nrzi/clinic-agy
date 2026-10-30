@@ -1,3 +1,4 @@
+import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
 import React, { useState, useEffect } from 'react';
 import { Appointment } from '@/shared/types';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
@@ -28,6 +29,7 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const dialogRef = useDialogFocus(onClose, isOpen && !!appointment);
   const { currentUser, currentRole } = useAuthStore();
 
   const [baseCoverage, setBaseCoverage] = useState<number>(0);
@@ -89,6 +91,8 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-labelledby="insurance-modal-title"
@@ -103,7 +107,7 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
             </div>
             <div>
               <h3 id="insurance-modal-title" className="text-sm font-bold text-slate-900">
-                اصلاح دستی سهم بیمه — پنجره فریز روزانه (FLOW-03 / AC-03)
+                اصلاح دستی سهم بیمه — پنجره فریز روزانه
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 <span>نوبت: {appointment.trackingCode}</span> • <span>بیمار: {appointment.patientName}</span>

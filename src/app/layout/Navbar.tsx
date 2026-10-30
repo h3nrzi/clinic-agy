@@ -1,64 +1,39 @@
-import React from 'react';
+import { DemoIdentity } from './DemoIdentity';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { useScenarioStore } from '@/shared/stores/useScenarioStore';
-import { HeartPulse, User, X } from 'lucide-react';
+import { memoryDb } from '@/mocks/db/memoryDb';
+import { HeartPulse, User, X, Bell, ChevronDown } from 'lucide-react';
+import { toPersianDigits } from '@/shared/utils/formatters';
 
-export const Navbar: React.FC = () => {
-  const { currentUser } = useAuthStore();
+export const Navbar = () => {
+  const { currentUser, currentRole } = useAuthStore();
   const { statusNotice, dismissNotice } = useScenarioStore();
-
-  return (
-    <header className="pt-24 sm:pt-20 bg-white border-b border-slate-200 sticky top-0 z-40">
-      {/* Scenario status notification toast/banner */}
-      {statusNotice && (
-        <div className="bg-teal-50 border-b border-teal-200 px-4 py-2.5 text-xs text-teal-900 flex items-center justify-between">
-          <div className="flex items-center gap-2 max-w-5xl mx-auto">
-            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></span>
-            <span>{statusNotice}</span>
-          </div>
-          <button
-            onClick={dismissNotice}
-            className="text-teal-700 hover:text-teal-950 p-1 rounded transition"
-            title="بستن پیام"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Main Clinic Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-        {/* Logo and Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-teal-500/20">
-            <HeartPulse className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-slate-900">کلینیک سلامت آژی</h1>
-              <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 font-semibold px-2 py-0.5 rounded-full">
-                نسخه آزمایشی فرانت‌اند فاز ۲
-              </span>
-            </div>
-            <p className="text-xs text-slate-500">سامانه هوشمند رزرو نوبت، بیمه پلکانی و ویزیت آنلاین</p>
-          </div>
-        </div>
-
-        {/* Current user badge */}
-        <div className="flex items-center gap-3">
-          <div className="text-left hidden sm:block">
-            <div className="text-xs font-semibold text-slate-800">{currentUser.name}</div>
-            <div className="text-[11px] text-slate-500">{currentUser.roleTitle}</div>
-          </div>
-          <div className="w-9 h-9 rounded-full ring-2 ring-teal-500/30 overflow-hidden bg-slate-100 flex items-center justify-center">
-            {currentUser.avatar ? (
-              <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-5 h-5 text-slate-400" />
-            )}
-          </div>
-        </div>
+  const [identity, setIdentity] = useState(false);
+  const [panel, setPanel] = useState<'account' | 'notifications' | null>(null);
+  const [, refresh] = useState(0);
+  useEffect(() => memoryDb.subscribe(() => refresh(v => v + 1)), []);
+  useEffect(() => setPanel(null), [currentRole]);
+  useEffect(() => {
+    const close = (e: KeyboardEvent) => { if (e.key === 'Escape') setPanel(null); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, []);
+  const scoped = memoryDb.getAll('appointments').filter(a => currentRole === 'PATIENT' ? a.patientId === currentUser.id : currentRole === 'DOCTOR' ? a.doctorId === currentUser.id : currentRole === 'ADMIN_FINANCE' || a.branchId === currentUser.branchId || a.branchId === 'ONLINE');
+  const pending = scoped.filter(a => a.status === 'PENDING_PAYMENT');
+  const locked = scoped.filter(a => a.isSoftLocked);
+  return <><header className="app-header bg-white border-b border-slate-200 relative z-40">
+    {statusNotice && <div role="status" className="bg-teal-50 px-4 py-2 text-xs flex justify-between gap-4"><span>{statusNotice}</span><button onClick={dismissNotice} aria-label="بستن پیام"><X size={18}/></button></div>}
+    <div className="topbar">
+      <a href="#workspace" className="topbar-brand"><HeartPulse size={28}/><div><h1>کلینیک سلامت آژی</h1><p>فضای کار / {currentUser.roleTitle}</p></div></a>
+      <div className="topbar-actions">
+        <span className="topbar-date">{new Date().toLocaleDateString('fa-IR',{weekday:'long',day:'numeric',month:'long'})}</span>
+        <button className="topbar-icon" aria-label="مرکز اعلان‌ها" aria-expanded={panel==='notifications'} onClick={()=>setPanel(panel==='notifications'?null:'notifications')}><Bell size={20}/>{pending.length+locked.length > 0 && <span className="notification-dot"/>}</button>
+        <button className="account-trigger" aria-label={`حساب کاربری ${currentUser.name}`} aria-expanded={panel==='account'} onClick={()=>setPanel(panel==='account'?null:'account')}><span className="account-avatar"><User size={20}/></span><span>{currentUser.name}</span><ChevronDown size={16}/></button>
       </div>
-    </header>
-  );
+    </div>
+    {panel && <section className="header-popover" aria-label={panel==='account'?'اطلاعات حساب':'مرکز اعلان‌ها'}><div className="popover-heading"><strong>{panel==='account'?'حساب کاربری':'مرکز اعلان‌ها'}</strong><button aria-label="بستن پنل" onClick={()=>setPanel(null)}><X size={18}/></button></div>
+      {panel==='account'?<div className="space-y-3"><p>{currentUser.name}</p><p>{currentUser.roleTitle}</p><p><bdi>{currentUser.mobile}</bdi></p><small>برای تغییر نقش از ابزار نمایشی بالای صفحه استفاده کنید.</small><button className="identity-submit" onClick={()=>{setPanel(null);setIdentity(true);}}>آزمایش ورود و رضایت‌نامه</button></div>:<div className="space-y-3"><p>{toPersianDigits(pending.length)} نوبت در انتظار پرداخت</p><p>{toPersianDigits(locked.length)} نوبت دارای محدودیت ورود به ویزیت</p><small>وضعیت فعلی نوبت‌های قابل دسترسی برای نقش شما؛ بدون نمایش اطلاعات بالینی.</small></div>}
+    </section>}
+  </header>{identity && <DemoIdentity onClose={()=>setIdentity(false)}/>}</>;
 };
