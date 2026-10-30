@@ -1,6 +1,11 @@
 import { memoryDb } from '../db/memoryDb';
 import { walletRepository } from './walletRepository';
 import { Appointment, AppointmentStatus, BranchId, ClinicalNote, UserRole } from '@/shared/types';
+import {
+  CancellationActor,
+  CancellationResult,
+  evaluateCancellation,
+} from '@/features/patient-portal/logic/cancellationRules';
 
 export interface AppointmentFilters {
   branchId?: BranchId;
@@ -200,5 +205,57 @@ export const appointmentRepository = {
     });
 
     return fullNote;
+  },
+
+  /**
+   * Cancel appointment with 12-hour boundary rule (FLOW-05 / AC-06)
+   */
+  cancelAppointment(
+    appointmentId: string,
+    cancelledBy: CancellationActor = 'PATIENT',
+    cancelTime: string | Date = new Date()
+  ): { appointment: Appointment; evaluation: CancellationResult } {
+    const app = this.getById(appointmentId);
+    if (!app) throw new Error(`Appointment ${appointmentId} not found`);
+
+    const settings = memoryDb.getSettings();
+    const evaluation = evaluateCancellation({
+      appointmentTime: app.dateTime,
+      cancelTime,
+      cancelledBy,
+      patientPaidAmount: app.initialPatientPaid,
+      thresholdHours: settings.cancellationThresholdHours,
+      penaltyPercent: settings.cancellationPenaltyPercent,
+    });
+
+    const newStatus: AppointmentStatus =
+      cancelledBy === 'PATIENT' ? 'CANCELLED_BY_PATIENT' : 'CANCELLED_BY_CLINIC';
+
+    const updated = memoryDb.update('appointments', appointmentId, {
+      status: newStatus,
+      isSoftLocked: false,
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Credit refund amount to patient's wallet
+    if (evaluation.walletCreditAmount > 0) {
+      walletRepository.adjustBalance(
+        app.patientId,
+        evaluation.walletCreditAmount,
+        `بازگشت وجه لغو نوبت ${app.trackingCode} (${evaluation.message})`
+      );
+    }
+
+    // Insert audit log
+    memoryDb.insert('auditLogs', {
+      id: `log-${Date.now()}`,
+      actorRole: cancelledBy === 'PATIENT' ? 'PATIENT' : 'SECRETARY_TEHRAN',
+      actorName: cancelledBy === 'PATIENT' ? app.patientName : 'کلینیک',
+      action: 'APPOINTMENT_CANCELLED',
+      details: `لغو نوبت ${app.trackingCode}: جریمه کلینیک ${evaluation.penaltyAmount.toLocaleString('fa-IR')} تومان | واریز به کیف پول: ${evaluation.walletCreditAmount.toLocaleString('fa-IR')} تومان`,
+      timestamp: new Date().toISOString(),
+    });
+
+    return { appointment: updated, evaluation };
   },
 };

@@ -8,6 +8,9 @@ import {
   Wallet,
   Appointment,
   AuditLogEntry,
+  DoctorShift,
+  DoctorLeave,
+  ClinicSettings,
 } from '@/shared/types';
 
 export const SEED_BRANCHES: Branch[] = [
@@ -399,7 +402,190 @@ export const SEED_APPOINTMENTS: Appointment[] = [
     createdAt: '2026-10-19T14:00:00',
     updatedAt: '2026-10-20T15:20:00',
   },
+  {
+    id: 'app-future-safe',
+    trackingCode: 'AGY-10188',
+    patientId: 'pat-1',
+    patientName: 'علی رضایی',
+    patientMobile: '۰۹۱۲۱۱۱۲۲۳۳',
+    doctorId: 'doc-1',
+    doctorName: 'دکتر مریم احمدی',
+    serviceId: 'srv-1',
+    serviceName: 'ویزیت تخصصی آنلاین (تله‌مدیسین)',
+    branchId: 'ONLINE',
+    // 24 hours in the future -> >= 12h cancellation test (free, 100% refund)
+    dateTime: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+    durationMinutes: 15,
+    status: 'CONFIRMED',
+    financialStatus: 'SETTLED',
+    freePrice: 280000,
+    baseInsuranceCoverage: 84000,
+    suppInsuranceCoverage: 137200,
+    walletCreditApplied: 0,
+    initialPatientPaid: 200000,
+    revisedPatientDue: 58800,
+    debtOrCreditBalance: 0,
+    isSoftLocked: false,
+    emergencyUnlocked: false,
+    documents: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'app-future-urgent',
+    trackingCode: 'AGY-10189',
+    patientId: 'pat-1',
+    patientName: 'علی رضایی',
+    patientMobile: '۰۹۱۲۱۱۱۲۲۳۳',
+    doctorId: 'doc-2',
+    doctorName: 'دکتر رضا حسینی',
+    serviceId: 'srv-2',
+    serviceName: 'ویزیت تخصصی حضوری',
+    branchId: 'TEHRAN',
+    // 4 hours in the future -> < 12h cancellation test (50% penalty, 50% refund)
+    dateTime: new Date(Date.now() + 4 * 3600 * 1000).toISOString(),
+    durationMinutes: 20,
+    status: 'CONFIRMED',
+    financialStatus: 'SETTLED',
+    freePrice: 350000,
+    baseInsuranceCoverage: 105000,
+    suppInsuranceCoverage: 0,
+    walletCreditApplied: 0,
+    initialPatientPaid: 200000,
+    revisedPatientDue: 245000,
+    debtOrCreditBalance: 0,
+    isSoftLocked: false,
+    emergencyUnlocked: false,
+    documents: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
+
+export const SEED_DOCTOR_SHIFTS: DoctorShift[] = [
+  {
+    id: 'shift-1',
+    doctorId: 'doc-1',
+    doctorName: 'دکتر مریم احمدی',
+    branchId: 'TEHRAN',
+    dayOfWeek: 0, // شنبه
+    dayName: 'شنبه',
+    startTime: '۰۹:۰۰',
+    endTime: '۱۳:۰۰',
+    isActive: true,
+  },
+  {
+    id: 'shift-2',
+    doctorId: 'doc-1',
+    doctorName: 'دکتر مریم احمدی',
+    branchId: 'ONLINE',
+    dayOfWeek: 1, // یکشنبه
+    dayName: 'یکشنبه',
+    startTime: '۱۶:۰۰',
+    endTime: '۲۰:۰۰',
+    isActive: true,
+  },
+  {
+    id: 'shift-3',
+    doctorId: 'doc-1',
+    doctorName: 'دکتر مریم احمدی',
+    branchId: 'TEHRAN',
+    dayOfWeek: 2, // دوشنبه
+    dayName: 'دوشنبه',
+    startTime: '۰۹:۰۰',
+    endTime: '۱۳:۰۰',
+    isActive: true,
+  },
+  {
+    id: 'shift-4',
+    doctorId: 'doc-2',
+    doctorName: 'دکتر رضا حسینی',
+    branchId: 'TEHRAN',
+    dayOfWeek: 0, // شنبه
+    dayName: 'شنبه',
+    startTime: '۱۴:۰۰',
+    endTime: '۱۹:۰۰',
+    isActive: true,
+  },
+  {
+    id: 'shift-5',
+    doctorId: 'doc-2',
+    doctorName: 'دکتر رضا حسینی',
+    branchId: 'ONLINE',
+    dayOfWeek: 2, // دوشنبه
+    dayName: 'دوشنبه',
+    startTime: '۱۵:۰۰',
+    endTime: '۱۹:۰۰',
+    isActive: true,
+  },
+  {
+    id: 'shift-6',
+    doctorId: 'doc-3',
+    doctorName: 'دکتر سارا کاظمی',
+    branchId: 'ISFAHAN',
+    dayOfWeek: 1, // یکشنبه
+    dayName: 'یکشنبه',
+    startTime: '۰۹:۰۰',
+    endTime: '۱۴:۰۰',
+    isActive: true,
+  },
+  {
+    id: 'shift-7',
+    doctorId: 'doc-3',
+    doctorName: 'دکتر سارا کاظمی',
+    branchId: 'ONLINE',
+    dayOfWeek: 3, // سه‌شنبه
+    dayName: 'سه‌شنبه',
+    startTime: '۱۶:۰۰',
+    endTime: '۲۰:۰۰',
+    isActive: true,
+  },
+  {
+    id: 'shift-8',
+    doctorId: 'doc-4',
+    doctorName: 'دکتر علی کریمی',
+    branchId: 'ISFAHAN',
+    dayOfWeek: 2, // دوشنبه
+    dayName: 'دوشنبه',
+    startTime: '۱۰:۰۰',
+    endTime: '۱۵:۰۰',
+    isActive: true,
+  },
+];
+
+export const SEED_DOCTOR_LEAVES: DoctorLeave[] = [
+  {
+    id: 'leave-1',
+    doctorId: 'doc-1',
+    doctorName: 'دکتر مریم احمدی',
+    startDate: '2026-11-04',
+    endDate: '2026-11-05',
+    reason: 'شرکت در کنفرانس بین‌المللی بیماری‌های غدد و متابولیسم',
+    status: 'PENDING_APPROVAL',
+    requestedAt: '2026-10-29T14:30:00',
+    affectedAppointmentsCount: 1,
+  },
+  {
+    id: 'leave-2',
+    doctorId: 'doc-2',
+    doctorName: 'دکتر رضا حسینی',
+    startDate: '2026-10-15',
+    endDate: '2026-10-16',
+    reason: 'مرخصی استعلاجی',
+    status: 'APPROVED',
+    requestedAt: '2026-10-12T10:00:00',
+    reviewedBy: 'منشی ارشد شعبه تهران',
+    reviewedAt: '2026-10-12T11:15:00',
+    reviewComment: 'مورد تأیید است و نوبت‌ها جابجا شدند.',
+    affectedAppointmentsCount: 0,
+  },
+];
+
+export const SEED_CLINIC_SETTINGS: ClinicSettings = {
+  defaultTaxPercent: 10,
+  cancellationThresholdHours: 12,
+  cancellationPenaltyPercent: 50,
+};
 
 export const SEED_AUDIT_LOGS: AuditLogEntry[] = [
   {

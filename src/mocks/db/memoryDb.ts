@@ -8,6 +8,9 @@ import {
   Wallet,
   Appointment,
   AuditLogEntry,
+  DoctorShift,
+  DoctorLeave,
+  ClinicSettings,
 } from '@/shared/types';
 import {
   SEED_BRANCHES,
@@ -19,6 +22,9 @@ import {
   SEED_WALLETS,
   SEED_APPOINTMENTS,
   SEED_AUDIT_LOGS,
+  SEED_DOCTOR_SHIFTS,
+  SEED_DOCTOR_LEAVES,
+  SEED_CLINIC_SETTINGS,
 } from './seedData';
 
 export interface DbSchema {
@@ -31,9 +37,24 @@ export interface DbSchema {
   wallets: Wallet[];
   appointments: Appointment[];
   auditLogs: AuditLogEntry[];
+  doctorShifts: DoctorShift[];
+  doctorLeaves: DoctorLeave[];
+  clinicSettings: ClinicSettings;
 }
 
-export type CollectionName = keyof DbSchema;
+export type CollectionName =
+  | 'branches'
+  | 'doctors'
+  | 'services'
+  | 'baseInsurances'
+  | 'supplementaryInsurances'
+  | 'patients'
+  | 'wallets'
+  | 'appointments'
+  | 'auditLogs'
+  | 'doctorShifts'
+  | 'doctorLeaves';
+
 
 const STORAGE_KEY = 'clinic_agy_db_v1';
 
@@ -56,6 +77,9 @@ class MemoryDatabase {
       wallets: JSON.parse(JSON.stringify(SEED_WALLETS)),
       appointments: JSON.parse(JSON.stringify(SEED_APPOINTMENTS)),
       auditLogs: JSON.parse(JSON.stringify(SEED_AUDIT_LOGS)),
+      doctorShifts: JSON.parse(JSON.stringify(SEED_DOCTOR_SHIFTS)),
+      doctorLeaves: JSON.parse(JSON.stringify(SEED_DOCTOR_LEAVES)),
+      clinicSettings: JSON.parse(JSON.stringify(SEED_CLINIC_SETTINGS)),
     };
   }
 
@@ -66,7 +90,14 @@ class MemoryDatabase {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (parsed && typeof parsed === 'object' && parsed.appointments) {
-            return parsed;
+            // Ensure newly added fields exist if upgrading from older local storage
+            return {
+              ...this.getInitialSeed(),
+              ...parsed,
+              doctorShifts: parsed.doctorShifts || JSON.parse(JSON.stringify(SEED_DOCTOR_SHIFTS)),
+              doctorLeaves: parsed.doctorLeaves || JSON.parse(JSON.stringify(SEED_DOCTOR_LEAVES)),
+              clinicSettings: parsed.clinicSettings || JSON.parse(JSON.stringify(SEED_CLINIC_SETTINGS)),
+            };
           }
         }
       } catch (err) {
@@ -149,6 +180,16 @@ class MemoryDatabase {
     list.splice(index, 1);
     this.notify();
     return true;
+  }
+
+  public getSettings(): ClinicSettings {
+    return { ...this.data.clinicSettings };
+  }
+
+  public updateSettings(partial: Partial<ClinicSettings>): ClinicSettings {
+    this.data.clinicSettings = { ...this.data.clinicSettings, ...partial };
+    this.notify();
+    return { ...this.data.clinicSettings };
   }
 
   public resetToFactoryDefaults(): void {

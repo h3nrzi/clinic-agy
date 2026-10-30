@@ -5,13 +5,12 @@ import { useBookingStore } from '@/shared/stores/useBookingStore';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
 import { walletRepository } from '@/mocks/repositories/walletRepository';
-import { doctorRepository } from '@/mocks/repositories/doctorRepository';
-import { tariffRepository } from '@/mocks/repositories/tariffRepository';
 import { formatToman, formatDateTime, toPersianDigits } from '@/shared/utils/formatters';
 import { BookingWizard } from '@/features/booking';
 import { GatewaySimulator } from '@/features/payment-mock';
-import { PaymentSuccessConfirmation } from '@/features/patient-portal';
+import { PaymentSuccessConfirmation, CancelAppointmentModal } from '@/features/patient-portal';
 import { SecretaryDashboard } from '@/features/secretary';
+import { FinancialDashboard } from '@/features/financial-dashboard';
 import { Appointment } from '@/shared/types';
 import {
   DoctorDashboard,
@@ -30,9 +29,9 @@ import {
   Clock,
   Building,
   Sparkles,
-  FileSpreadsheet,
   PlusCircle,
   CalendarCheck,
+  XCircle,
 } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
@@ -43,6 +42,7 @@ export const AppLayout: React.FC = () => {
   const [patientTab, setPatientTab] = useState<'MY_APPOINTMENTS' | 'NEW_BOOKING'>('MY_APPOINTMENTS');
   const [activePatientConsultationApp, setActivePatientConsultationApp] = useState<Appointment | null>(null);
   const [activeDoctorConsultationApp, setActiveDoctorConsultationApp] = useState<Appointment | null>(null);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
 
   // Reactive listener to database changes
   const [, setDbVersion] = useState(0);
@@ -62,9 +62,6 @@ export const AppLayout: React.FC = () => {
   }, []);
 
   const allAppointments = appointmentRepository.getAll();
-  const allDoctors = doctorRepository.getAll();
-  const allBranches = memoryDb.getAll('branches');
-  const allServices = tariffRepository.getServices();
 
   // Patient view calculations
   const patientAppointments = allAppointments.filter((a) => a.patientId === currentUser.id);
@@ -82,24 +79,24 @@ export const AppLayout: React.FC = () => {
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-1.5 bg-teal-500/20 text-teal-300 border border-teal-500/40 px-3 py-1 rounded-full text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              بستهٔ کاری WP-04: کارتابل پزشک، اتاق ویزیت زنده و فرم شرح‌حال ۵ فیلدی (FLOW-04)
+              بستهٔ کاری WP-05: تقویم شیفت‌ها، مرخصی، لغو ۱۲ ساعت و ماژول مالی اکسل ۲ شیتی (FLOW-05, FLOW-06)
             </div>
             <h2 className="text-xl font-bold tracking-tight">
-              مشاورهٔ تصویری زنده، پرونده بالینی ۵ فیلدی و تفکیک محرمانگی Field-Level RBAC
+              مدیریت تقویم شیفت‌ها، قانون لغو ۱۲ ساعت با ۵۰٪ جریمه و تحلیلگر اکسل ۲ شیتی با پیش‌نمایش Diff
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-              این ماژول اتاق ویزیت تصویری بدون ضبط (DEC-FE-02)، تایمر معکوس ۱۵ دقیقه‌ای، فرم ۵ فیلدی استاندارد پرونده، و تفکیک حریم خصوصی داده‌ها بین پزشک، بیمار و منشی (AC-05) را پوشش می‌دهد.
+              این بسته شامل هماهنگی ظرفیت تقویم و مرخصی پزشکان، لغو نوبت با مرز ۱۲ ساعت و استرداد وجه به کیف پول، داشبورد جامع مالی و تسویه سهم پزشکان (AC-08)، و تحلیلگر فایل اکسل ۲ شیتی تعرفه با جدول مقایسه‌ای Diff (AC-07) است.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-03: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
+              <span>وضعیت WP-04: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
             </span>
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-04: <strong className="text-emerald-400">فعال و عملیاتی 🟢</strong></span>
+              <span>وضعیت WP-05: <strong className="text-emerald-400">فعال و عملیاتی 🟢</strong></span>
             </span>
           </div>
         </div>
@@ -307,9 +304,27 @@ export const AppLayout: React.FC = () => {
                                 {app.branchId === 'TEHRAN' ? 'تهران' : 'اصفهان'}
                               </span>
                             )}
-                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
-                              {app.status === 'CONFIRMED' ? 'قطعی‌شده' : app.status}
-                            </span>
+                            {app.status === 'CONFIRMED' ? (
+                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
+                                قطعی‌شده
+                              </span>
+                            ) : app.status === 'COMPLETED' ? (
+                              <span className="bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
+                                ویزیت تکمیل‌شده
+                              </span>
+                            ) : app.status === 'CANCELLED_BY_PATIENT' ? (
+                              <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
+                                لغو شده توسط بیمار
+                              </span>
+                            ) : app.status === 'CANCELLED_BY_CLINIC' ? (
+                              <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
+                                لغو شده توسط کلینیک
+                              </span>
+                            ) : (
+                              <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[11px] font-semibold">
+                                {app.status}
+                              </span>
+                            )}
                           </div>
 
                           <div className="text-xs text-slate-600 flex flex-wrap items-center gap-3">
@@ -364,9 +379,21 @@ export const AppLayout: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Action button */}
+                        {/* Action buttons */}
                         <div className="flex items-center gap-2 shrink-0">
-                          {app.branchId === 'ONLINE' && (
+                          {/* Cancel Appointment Button (FLOW-05 / AC-06) */}
+                          {app.status === 'CONFIRMED' && (
+                            <button
+                              type="button"
+                              onClick={() => setAppointmentToCancel(app)}
+                              className="inline-flex items-center gap-1.5 text-slate-500 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 px-3 py-2 rounded-lg text-xs font-semibold transition"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              <span>لغو نوبت</span>
+                            </button>
+                          )}
+
+                          {app.branchId === 'ONLINE' && app.status === 'CONFIRMED' && (
                             <>
                               {app.isSoftLocked && (
                                 <button
@@ -413,6 +440,15 @@ export const AppLayout: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Cancel Appointment Modal (FLOW-05 / AC-06) */}
+              {appointmentToCancel && (
+                <CancelAppointmentModal
+                  appointment={appointmentToCancel}
+                  onClose={() => setAppointmentToCancel(null)}
+                  onCancelled={() => setAppointmentToCancel(null)}
+                />
+              )}
             </>
           )}
         </div>
@@ -440,49 +476,9 @@ export const AppLayout: React.FC = () => {
         )
       )}
 
-      {/* Admin / Finance View */}
+      {/* Admin / Finance View (FLOW-06, SCREEN-07, WP-05) */}
       {currentRole === 'ADMIN_FINANCE' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500">کل شعب فعال</div>
-              <div className="text-2xl font-bold text-slate-900 mt-2">{toPersianDigits(allBranches.length)} شعبه</div>
-              <div className="text-[11px] text-slate-400 mt-1">تهران، اصفهان، آنلاین</div>
-            </div>
-
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500">پزشکان ثبت‌شده</div>
-              <div className="text-2xl font-bold text-slate-900 mt-2">{toPersianDigits(allDoctors.length)} پزشک</div>
-              <div className="text-[11px] text-slate-400 mt-1">با درصد توافقی ۵۵٪ تا ۶۵٪</div>
-            </div>
-
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500">خدمات و تعرفه‌ها</div>
-              <div className="text-2xl font-bold text-slate-900 mt-2">{toPersianDigits(allServices.length)} خدمت</div>
-              <div className="text-[11px] text-slate-400 mt-1">آماده آپلود اکسل ۲ شیتی</div>
-            </div>
-
-            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-              <div className="text-xs text-slate-500">کل نوبت‌های پایگاه داده</div>
-              <div className="text-2xl font-bold text-slate-900 mt-2">{toPersianDigits(allAppointments.length)} نوبت</div>
-              <div className="text-[11px] text-slate-400 mt-1">در دیتابیس لوکال حافظه‌ای</div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                  مدیریت تعرفه و تسویه سهم پزشک (پیش‌نمایش گام‌های بعدی)
-                </h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  در بسته‌های کاری WP-01 و WP-05، موتور محاسبه سهم پزشک با کسر مواد مصرفی و مالیات ۱۰٪ و آپلود فایل اکسل ۲ شیتی با جدول Diff در این بخش فعال خواهد شد.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <FinancialDashboard />
       )}
 
       {/* Work Package Progress Map */}
@@ -494,11 +490,11 @@ export const AppLayout: React.FC = () => {
           </h3>
           <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            WP-04 تکمیل و عملیاتی
+            WP-05 فعال و عملیاتی
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-xs">
           <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
             <div className="font-bold text-teal-700 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-teal-600" />
@@ -539,13 +535,23 @@ export const AppLayout: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-3.5 rounded-lg border border-emerald-500 shadow-sm ring-2 ring-emerald-500/40">
-            <div className="font-bold text-emerald-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
+            <div className="font-bold text-teal-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-teal-600" />
               WP-04: کارتابل و ویزیت
             </div>
             <div className="text-slate-500 text-[11px] mt-1">
               اتاق ویزیت ویدیویی زنده، فرم ۵ فیلدی شرح‌حال و تفکیک RBAC.
+            </div>
+          </div>
+
+          <div className="bg-white p-3.5 rounded-lg border border-emerald-500 shadow-sm ring-2 ring-emerald-500/40">
+            <div className="font-bold text-emerald-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              WP-05: تقویم، لغو و اکسل
+            </div>
+            <div className="text-slate-500 text-[11px] mt-1">
+              تقویم و مرخصی، لغو ۱۲ ساعته با کسر ۵۰٪ جریمه و اکسل ۲ شیتی با Diff.
             </div>
           </div>
         </div>

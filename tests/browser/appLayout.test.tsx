@@ -51,10 +51,10 @@ describe('WP-00: App Component & Role Switcher UI Verification', () => {
     const adminBtn = screen.getByRole('button', { name: /مدیر مالی/ });
     fireEvent.click(adminBtn);
 
-    expect(screen.getByText('کل شعب فعال')).toBeDefined();
-    expect(screen.getByText('۳ شعبه')).toBeDefined();
-    expect(screen.getByText('پزشکان ثبت‌شده')).toBeDefined();
-    expect(screen.getByText('۴ پزشک')).toBeDefined();
+    expect(screen.getByTestId('financial-dashboard')).toBeDefined();
+    expect(screen.getByText(/پنل جامع مدیریت مالی/)).toBeDefined();
+    expect(screen.getByText('کل درآمد ناخالص خدمات')).toBeDefined();
+    expect(screen.getByText('مجموع سهم ناخالص پزشکان')).toBeDefined();
   });
 
   it('toggles indebted patient scenario and enforces soft-lock in UI', () => {

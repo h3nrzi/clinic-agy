@@ -191,3 +191,66 @@ export interface AuditLogEntry {
   details: string;
   timestamp: string;
 }
+
+/**
+ * Weekly doctor shift schedule (FLOW-05, S17)
+ */
+export interface DoctorShift {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  branchId: BranchId;
+  dayOfWeek: number; // 0: شنبه, 1: یکشنبه, ..., 6: جمعه
+  dayName: string;
+  startTime: string; // e.g. "09:00"
+  endTime: string;   // e.g. "13:00"
+  isActive: boolean;
+}
+
+/**
+ * Doctor leave / shift modification request (FLOW-05, S17)
+ */
+export type LeaveStatus = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+
+export interface DoctorLeave {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  reason: string;
+  status: LeaveStatus;
+  requestedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewComment?: string;
+  affectedAppointmentsCount?: number;
+}
+
+/**
+ * Clinic global settings for financial calculations and cancellation policies (DEC-FE-03, S17)
+ */
+export interface ClinicSettings {
+  defaultTaxPercent: number;        // default: 10%
+  cancellationThresholdHours: number; // default: 12h
+  cancellationPenaltyPercent: number; // default: 50%
+}
+
+/**
+ * Diff item representing changes between existing database tariffs and uploaded Excel
+ */
+export type DiffAction = 'NEW' | 'MODIFIED' | 'UNCHANGED';
+export type DiffCategory = 'SERVICE' | 'SUPPLEMENTARY_RULE';
+
+export interface TariffDiffItem {
+  id: string;
+  category: DiffCategory;
+  action: DiffAction;
+  code: string;
+  title: string;
+  branchOrDetails: string;
+  oldValueDescription?: string;
+  newValueDescription: string;
+  rawNewData: any;
+}
+

@@ -3,6 +3,7 @@ import { PatientDocument } from '@/shared/types';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
+import { scheduleRepository } from '@/mocks/repositories/scheduleRepository';
 import { formatToman, toPersianDigits } from '@/shared/utils/formatters';
 import { AppointmentTable } from './AppointmentTable';
 import { AppointmentDrawer } from './AppointmentDrawer';
@@ -16,6 +17,10 @@ import {
   CreditCard,
   Search,
   CalendarCheck,
+  CalendarDays,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const SecretaryDashboard: React.FC = () => {
@@ -30,6 +35,9 @@ export const SecretaryDashboard: React.FC = () => {
     return unsubscribe;
   }, []);
 
+  // Section state (Appointments Desk vs Doctor Leaves Management)
+  const [activeSection, setActiveSection] = useState<'APPOINTMENTS' | 'DOCTOR_LEAVES'>('APPOINTMENTS');
+
   // Filter state
   const isTehranSecretary = currentRole === 'SECRETARY_TEHRAN';
   const defaultBranch = isTehranSecretary ? 'TEHRAN' : 'ISFAHAN';
@@ -38,6 +46,10 @@ export const SecretaryDashboard: React.FC = () => {
   );
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ONLINE' | 'SOFT_LOCKED' | 'DEBIT' | 'WITH_DOCS'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Doctor leaves
+  const allLeaves = scheduleRepository.getLeaves();
+  const pendingLeaves = allLeaves.filter((l) => l.status === 'PENDING_APPROVAL');
 
   // Modals & Drawer State (ID-based to stay synchronously reactive)
   const [drawerAppId, setDrawerAppId] = useState<string | null>(null);
@@ -162,7 +174,163 @@ export const SecretaryDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* Secretary Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveSection('APPOINTMENTS')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            activeSection === 'APPOINTMENTS'
+              ? 'bg-teal-600 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <CalendarCheck className="w-4 h-4" />
+          <span>میز کار نوبت‌ها و پذیرش بیماران</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSection('DOCTOR_LEAVES')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            activeSection === 'DOCTOR_LEAVES'
+              ? 'bg-teal-600 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <CalendarDays className="w-4 h-4" />
+          <span>بررسی مرخصی پزشکان ({toPersianDigits(pendingLeaves.length)} در انتظار تأیید)</span>
+        </button>
+      </div>
+
+      {activeSection === 'DOCTOR_LEAVES' ? (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4 text-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-teal-600" />
+                کارتابل بررسی و تایید مرخصی پزشکان (FLOW-05, S17)
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                بررسی تداخل نوبت‌ها، تأیید/رد مرخصی و اجرای لغو یا جابجایی توسط کلینیک با بازگشت ۱۰۰٪ وجه
+              </p>
+            </div>
+            <span className="text-slate-500">
+              کل درخواست‌ها: {toPersianDigits(allLeaves.length)}
+            </span>
+          </div>
+
+          {allLeaves.length === 0 ? (
+            <div className="py-8 text-center text-slate-400">
+              هیچ درخواست مرخصی در سامانه ثبت نشده است.
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {allLeaves.map((leave) => {
+                const affectedApps = scheduleRepository.getAffectedAppointmentsForLeave(leave.id);
+                return (
+                  <div key={leave.id} className="py-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-slate-900 text-sm">{leave.doctorName}</span>
+                          <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono text-[11px]">
+                            از {leave.startDate} تا {leave.endDate}
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
+                              leave.status === 'APPROVED'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : leave.status === 'REJECTED'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}
+                          >
+                            {leave.status === 'APPROVED'
+                              ? 'تأییدشده'
+                              : leave.status === 'REJECTED'
+                              ? 'ردشده'
+                              : 'در انتظار بررسی منشی'}
+                          </span>
+                        </div>
+                        <p className="text-slate-600">علت مرخصی: «{leave.reason}»</p>
+                      </div>
+
+                      {/* Review Buttons if Pending */}
+                      {leave.status === 'PENDING_APPROVAL' && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              scheduleRepository.reviewLeave(
+                                leave.id,
+                                'APPROVED',
+                                currentUser.name,
+                                currentRole,
+                                'تأیید شد'
+                              );
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition shadow-sm"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>تأیید مرخصی</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              scheduleRepository.reviewLeave(
+                                leave.id,
+                                'REJECTED',
+                                currentUser.name,
+                                currentRole,
+                                'به دلیل تداخل کاری و کمبود ظرفیت رد شد'
+                              );
+                            }}
+                            className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>رد درخواست</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Affected Appointments Alert */}
+                    {affectedApps.length > 0 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-900">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>
+                            این مرخصی با <strong>{toPersianDigits(affectedApps.length)} نوبت رزروشده</strong> تداخل دارد.
+                          </span>
+                        </div>
+                        {leave.status === 'APPROVED' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const count = scheduleRepository.cancelAffectedAppointmentsForLeave(
+                                leave.id,
+                                currentUser.name,
+                                currentRole
+                              );
+                              alert(`${count} نوبت با موفقیت توسط کلینیک لغو و ۱۰۰٪ مبالغ به کیف پول بیماران استرداد شد.`);
+                            }}
+                            className="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1 rounded-lg text-xs font-semibold self-start sm:self-auto transition shadow-xs"
+                          >
+                            لغو نوبت‌های متأثر توسط کلینیک (۱۰۰٪ استرداد)
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Total Appointments */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
@@ -304,6 +472,8 @@ export const SecretaryDashboard: React.FC = () => {
         onOpenInsuranceModal={(app) => setInsuranceAppId(app.id)}
         onOpenEmergencyUnlock={(app) => setUnlockAppId(app.id)}
       />
+      </>
+      )}
 
       {/* Slide-over Drawer for Patient Details & Documents */}
       <AppointmentDrawer
