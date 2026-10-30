@@ -77,26 +77,26 @@ export const AppLayout: React.FC = () => {
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 bg-teal-500/20 text-teal-300 border border-teal-500/40 px-3 py-1 rounded-full text-xs font-semibold">
+            <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              بستهٔ کاری WP-05: تقویم شیفت‌ها، مرخصی، لغو ۱۲ ساعت و ماژول مالی اکسل ۲ شیتی (FLOW-05, FLOW-06)
+              بستهٔ کاری WP-06: آزمون‌های مرورگری E2E و پذیرش نهایی دمو (FLOW-01 تا FLOW-06)
             </div>
             <h2 className="text-xl font-bold tracking-tight">
-              مدیریت تقویم شیفت‌ها، قانون لغو ۱۲ ساعت با ۵۰٪ جریمه و تحلیلگر اکسل ۲ شیتی با پیش‌نمایش Diff
+              پوشش کامل تمامی سناریوهای پذیرش (AC-01 تا AC-08) و آماده برای ارزیابی جامع کارفرما
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-              این بسته شامل هماهنگی ظرفیت تقویم و مرخصی پزشکان، لغو نوبت با مرز ۱۲ ساعت و استرداد وجه به کیف پول، داشبورد جامع مالی و تسویه سهم پزشکان (AC-08)، و تحلیلگر فایل اکسل ۲ شیتی تعرفه با جدول مقایسه‌ای Diff (AC-07) است.
+              تمامی جریان‌های کاری (رزرو آنلاین زیر ۳ دقیقه، اصلاح بیمه، قفل نرم بدهکاری، اتاق ویزیت تصویری، پرونده محرمانه ۵ فیلدی، لغو ۱۲ ساعته، و ماژول مالی اکسل ۲ شیتی) پیاده‌سازی شده و ۵۲ آزمون خودکار را با موفقیت ۱۰۰٪ پشت سر گذاشته‌اند.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-04: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
+              <span>وضعیت WP-05: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
             </span>
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-05: <strong className="text-emerald-400">فعال و عملیاتی 🟢</strong></span>
+              <span>وضعیت WP-06: <strong className="text-emerald-400">تکمیل و آماده ارزیابی 🟢</strong></span>
             </span>
           </div>
         </div>
