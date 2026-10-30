@@ -12,6 +12,12 @@ import { BookingWizard } from '@/features/booking';
 import { GatewaySimulator } from '@/features/payment-mock';
 import { PaymentSuccessConfirmation } from '@/features/patient-portal';
 import { SecretaryDashboard } from '@/features/secretary';
+import { Appointment } from '@/shared/types';
+import {
+  DoctorDashboard,
+  ConsultationRoom,
+  PatientConsultationRoom,
+} from '@/features/teleconsultation';
 import {
   Calendar,
   CreditCard,
@@ -21,10 +27,8 @@ import {
   Lock,
   Unlock,
   Layers,
-  ArrowRight,
   Clock,
   Building,
-  UserCheck,
   Sparkles,
   FileSpreadsheet,
   PlusCircle,
@@ -37,12 +41,22 @@ export const AppLayout: React.FC = () => {
   const { step: bookingStep, resetBooking } = useBookingStore();
 
   const [patientTab, setPatientTab] = useState<'MY_APPOINTMENTS' | 'NEW_BOOKING'>('MY_APPOINTMENTS');
+  const [activePatientConsultationApp, setActivePatientConsultationApp] = useState<Appointment | null>(null);
+  const [activeDoctorConsultationApp, setActiveDoctorConsultationApp] = useState<Appointment | null>(null);
 
   // Reactive listener to database changes
   const [, setDbVersion] = useState(0);
   useEffect(() => {
     const unsubscribe = memoryDb.subscribe(() => {
       setDbVersion((v) => v + 1);
+      setActiveDoctorConsultationApp((current: Appointment | null) => {
+        if (!current) return null;
+        return appointmentRepository.getById(current.id) || null;
+      });
+      setActivePatientConsultationApp((current: Appointment | null) => {
+        if (!current) return null;
+        return appointmentRepository.getById(current.id) || null;
+      });
     });
     return unsubscribe;
   }, []);
@@ -68,24 +82,24 @@ export const AppLayout: React.FC = () => {
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-1.5 bg-teal-500/20 text-teal-300 border border-teal-500/40 px-3 py-1 rounded-full text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              بستهٔ کاری WP-03: میز کار منشی، اصلاح دستی بیمه و مهار قفل نرم (FLOW-03)
+              بستهٔ کاری WP-04: کارتابل پزشک، اتاق ویزیت زنده و فرم شرح‌حال ۵ فیلدی (FLOW-04)
             </div>
             <h2 className="text-xl font-bold tracking-tight">
-              مدیریت هوشمند پذیرش، بررسی مدارک بالینی و مهار مانده‌حساب بیماران
+              مشاورهٔ تصویری زنده، پرونده بالینی ۵ فیلدی و تفکیک محرمانگی Field-Level RBAC
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-              این ماژول پذیرش منشی (FLOW-03 / SCREEN-05) را با جدول تفکیکی شعب، بررسی مدارک و زوم تصویر، اصلاح دستی سهم بیمه همراه با محاسبهٔ لحظه‌ای دلتا، قفل نرم ویزیت آنلاین و بازگشایی اضطراری پوشش می‌دهد.
+              این ماژول اتاق ویزیت تصویری بدون ضبط (DEC-FE-02)، تایمر معکوس ۱۵ دقیقه‌ای، فرم ۵ فیلدی استاندارد پرونده، و تفکیک حریم خصوصی داده‌ها بین پزشک، بیمار و منشی (AC-05) را پوشش می‌دهد.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-02: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
+              <span>وضعیت WP-03: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
             </span>
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-03: <strong className="text-emerald-400">فعال و عملیاتی 🟢</strong></span>
+              <span>وضعیت WP-04: <strong className="text-emerald-400">فعال و عملیاتی 🟢</strong></span>
             </span>
           </div>
         </div>
@@ -138,8 +152,13 @@ export const AppLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* Conditional View: Booking Gateway, Confirmation or Dashboard */}
-          {bookingStep === 'GATEWAY' ? (
+          {/* Conditional View: Active Patient Video Room, Gateway, Confirmation or Dashboard */}
+          {activePatientConsultationApp ? (
+            <PatientConsultationRoom
+              appointment={activePatientConsultationApp}
+              onExit={() => setActivePatientConsultationApp(null)}
+            />
+          ) : bookingStep === 'GATEWAY' ? (
             <GatewaySimulator />
           ) : bookingStep === 'CONFIRMED' ? (
             <PaymentSuccessConfirmation
@@ -363,6 +382,11 @@ export const AppLayout: React.FC = () => {
                               )}
                               <button
                                 disabled={app.isSoftLocked}
+                                onClick={() => {
+                                  if (!app.isSoftLocked) {
+                                    setActivePatientConsultationApp(app);
+                                  }
+                                }}
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition ${
                                   app.isSoftLocked
                                     ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
@@ -399,60 +423,21 @@ export const AppLayout: React.FC = () => {
         <SecretaryDashboard />
       )}
 
-      {/* Doctor View */}
+      {/* Doctor View (FLOW-04, SCREEN-06, WP-04) */}
       {currentRole === 'DOCTOR' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
-                <UserCheck className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-base">{currentUser.name}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  کارتابل بالینی، نوبت‌های ویزیت تصویری و فرم ثبت پرونده ۵ فیلدی
-                </p>
-              </div>
-            </div>
-            <span className="bg-teal-50 text-teal-700 border border-teal-200 px-3 py-1 rounded-lg text-xs font-semibold">
-              آماده برای بسته کاری WP-04
-            </span>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <h4 className="font-bold text-slate-800 text-sm">نوبت‌های ویزیت دکتر احمدی (شبیه‌ساز)</h4>
-            <div className="space-y-3">
-              {allAppointments
-                .filter((a) => a.doctorId === 'doc-1')
-                .map((app) => (
-                  <div
-                    key={app.id}
-                    className="p-4 border border-slate-200 rounded-lg flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <div className="font-bold text-slate-800">
-                        {app.patientName} — {app.serviceName}
-                      </div>
-                      <div className="text-slate-500 mt-1">
-                        زمان: {formatDateTime(app.dateTime)} | وضعیت: {app.status}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {app.clinicalNote ? (
-                        <span className="text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200 font-medium">
-                          شرح‌حال ۵ فیلدی ثبت شده
-                        </span>
-                      ) : (
-                        <span className="text-slate-500 bg-slate-100 px-2.5 py-1 rounded">
-                          در انتظار شروع ویزیت (WP-04)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </div>
+        activeDoctorConsultationApp ? (
+          <ConsultationRoom
+            appointment={activeDoctorConsultationApp}
+            doctorName={currentUser.name}
+            onBack={() => setActiveDoctorConsultationApp(null)}
+          />
+        ) : (
+          <DoctorDashboard
+            doctorName={currentUser.name}
+            appointments={allAppointments.filter((a) => a.doctorId === currentUser.id || !a.doctorId)}
+            onStartConsultation={(app) => setActiveDoctorConsultationApp(app)}
+          />
+        )
       )}
 
       {/* Admin / Finance View */}
@@ -509,15 +494,15 @@ export const AppLayout: React.FC = () => {
           </h3>
           <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            WP-02 تکمیل و عملیاتی
+            WP-04 تکمیل و عملیاتی
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
           <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
             <div className="font-bold text-teal-700 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-teal-600" />
-              WP-00: اسکلت، ماک و دمو
+              WP-00: شالوده و دمو
             </div>
             <div className="text-slate-500 text-[11px] mt-1">
               پایگاه داده حافظه‌ای، استورها، نوار سوییچ ۵ نقشه و کامپوننت دمو.
@@ -527,30 +512,40 @@ export const AppLayout: React.FC = () => {
           <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
             <div className="font-bold text-teal-700 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-teal-600" />
-              WP-01: موتورهای منطق مالی
+              WP-01: منطق مالی
             </div>
             <div className="text-slate-500 text-[11px] mt-1">
-              فرمول پلکانی بیمه، سهم پزشک با مالیات ۱۰٪ و ۱۰ تست واحد Vitest.
+              فرمول پلکانی بیمه، سهم پزشک با مالیات ۱۰٪ و تست‌های Vitest.
             </div>
           </div>
 
-          <div className="bg-white p-3.5 rounded-lg border border-emerald-500 shadow-sm ring-2 ring-emerald-500/40">
-            <div className="font-bold text-emerald-700 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              WP-02: جریان نماینده (رزرو)
+          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
+            <div className="font-bold text-teal-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-teal-600" />
+              WP-02: جریان نماینده
             </div>
             <div className="text-slate-500 text-[11px] mt-1">
               ویزارد ۴ مرحله‌ای زیر ۳ دقیقه، شبیه‌ساز شاپرک و صدور کد نوبت.
             </div>
           </div>
 
-          <div className="bg-white/70 p-3.5 rounded-lg border border-slate-200">
-            <div className="font-bold text-slate-700 flex items-center gap-1.5">
-              <ArrowRight className="w-4 h-4 text-slate-400" />
-              WP-03 تا WP-06: منشی، ویزیت، اکسل
+          <div className="bg-white p-3.5 rounded-lg border border-teal-400 shadow-sm ring-1 ring-teal-400/40">
+            <div className="font-bold text-teal-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-teal-600" />
+              WP-03: میز کار منشی
             </div>
             <div className="text-slate-500 text-[11px] mt-1">
-              میز کار منشی، اتاق ویزیت زنده، آپلود اکسل و تست‌های مرورگری E2E.
+              اصلاح دستی بیمه، محاسبه دلتا، مهار قفل نرم و بازگشایی اضطراری.
+            </div>
+          </div>
+
+          <div className="bg-white p-3.5 rounded-lg border border-emerald-500 shadow-sm ring-2 ring-emerald-500/40">
+            <div className="font-bold text-emerald-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              WP-04: کارتابل و ویزیت
+            </div>
+            <div className="text-slate-500 text-[11px] mt-1">
+              اتاق ویزیت ویدیویی زنده، فرم ۵ فیلدی شرح‌حال و تفکیک RBAC.
             </div>
           </div>
         </div>
