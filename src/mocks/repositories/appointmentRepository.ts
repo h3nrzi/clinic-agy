@@ -1,5 +1,6 @@
 import { memoryDb } from '../db/memoryDb';
-import { Appointment, AppointmentStatus, BranchId, ClinicalNote } from '@/shared/types';
+import { walletRepository } from './walletRepository';
+import { Appointment, AppointmentStatus, BranchId, ClinicalNote, UserRole } from '@/shared/types';
 
 export interface AppointmentFilters {
   branchId?: BranchId;
@@ -49,14 +50,15 @@ export const appointmentRepository = {
   },
 
   /**
-   * Secretary Manual Insurance Correction (Freeze Window Rule)
+   * Secretary Manual Insurance Correction (Freeze Window Rule - FLOW-03 / AC-03)
    * Calculates delta and updates wallet + soft lock accordingly.
    */
   correctInsurance(
     appointmentId: string,
     newBaseCoverage: number,
     newSuppCoverage: number,
-    correctedBy: string
+    correctedBy: string,
+    secretaryRole: UserRole = 'SECRETARY_TEHRAN'
   ): { appointment: Appointment; delta: number } {
     const app = this.getById(appointmentId);
     if (!app) throw new Error(`Appointment ${appointmentId} not found`);
@@ -78,10 +80,21 @@ export const appointmentRepository = {
       updatedAt: new Date().toISOString(),
     });
 
+    // Adjust patient wallet with net delta
+    const previousDelta = app.debtOrCreditBalance || 0;
+    const walletDelta = delta - previousDelta;
+    if (walletDelta !== 0) {
+      walletRepository.adjustBalance(
+        app.patientId,
+        walletDelta,
+        `مابه‌التفاوت اصلاح سهم بیمه نوبت ${app.trackingCode}`
+      );
+    }
+
     // Record audit log
     memoryDb.insert('auditLogs', {
       id: `log-${Date.now()}`,
-      actorRole: 'SECRETARY_TEHRAN',
+      actorRole: secretaryRole,
       actorName: correctedBy,
       action: 'INSURANCE_CORRECTION',
       details: `اصلاح بیمه نوبت ${app.trackingCode}: سهم جدید پایه ${newBaseCoverage.toLocaleString('fa-IR')} و تکمیلی ${newSuppCoverage.toLocaleString('fa-IR')} | دلتا: ${delta.toLocaleString('fa-IR')} تومان`,
@@ -95,7 +108,12 @@ export const appointmentRepository = {
    * Secretary Emergency Unlock for soft-locked teleconsultations (AC-04)
    * Mandatory reason logged into audit trail.
    */
-  emergencyUnlock(appointmentId: string, reason: string, unlockedBy: string): Appointment {
+  emergencyUnlock(
+    appointmentId: string,
+    reason: string,
+    unlockedBy: string,
+    secretaryRole: UserRole = 'SECRETARY_TEHRAN'
+  ): Appointment {
     const app = this.getById(appointmentId);
     if (!app) throw new Error(`Appointment ${appointmentId} not found`);
 
@@ -110,10 +128,45 @@ export const appointmentRepository = {
 
     memoryDb.insert('auditLogs', {
       id: `log-${Date.now()}`,
-      actorRole: 'SECRETARY_TEHRAN',
+      actorRole: secretaryRole,
       actorName: unlockedBy,
       action: 'EMERGENCY_UNLOCK',
       details: `بازگشایی اضطراری قفل ورود نوبت ${app.trackingCode} به دلیل: «${reason}»`,
+      timestamp: new Date().toISOString(),
+    });
+
+    return updated;
+  },
+
+  /**
+   * Settle patient outstanding debt online (Patient Portal AC-03 resolution)
+   */
+  settleDebt(appointmentId: string): Appointment {
+    const app = this.getById(appointmentId);
+    if (!app) throw new Error(`Appointment ${appointmentId} not found`);
+
+    const debt = Math.abs(app.debtOrCreditBalance);
+    const updated = memoryDb.update('appointments', appointmentId, {
+      debtOrCreditBalance: 0,
+      financialStatus: 'SETTLED',
+      isSoftLocked: false,
+      updatedAt: new Date().toISOString(),
+    });
+
+    if (debt > 0) {
+      walletRepository.adjustBalance(
+        app.patientId,
+        debt,
+        `تسویه آنلاین مابه‌التفاوت بدهی نوبت ${app.trackingCode}`
+      );
+    }
+
+    memoryDb.insert('auditLogs', {
+      id: `log-${Date.now()}`,
+      actorRole: 'PATIENT',
+      actorName: app.patientName,
+      action: 'PAYMENT',
+      details: `تسویه آنلاین بدهی نوبت ${app.trackingCode} به مبلغ ${debt.toLocaleString('fa-IR')} تومان`,
       timestamp: new Date().toISOString(),
     });
 

@@ -10,6 +10,8 @@ export type Role =
   | 'DOCTOR' 
   | 'ADMIN_FINANCE';
 
+export type UserRole = Role;
+
 export type BranchId = 'TEHRAN' | 'ISFAHAN' | 'ONLINE';
 
 export interface Branch {
@@ -113,6 +115,8 @@ export interface MedicalDocument {
   uploadedAt: string;
   sizeBytes: number;
 }
+
+export type PatientDocument = MedicalDocument;
 
 /**
  * 5-Field Clinical Note as mandated by S12, S15, FLOW-04

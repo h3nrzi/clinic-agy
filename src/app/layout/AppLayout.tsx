@@ -11,6 +11,7 @@ import { formatToman, formatDateTime, toPersianDigits } from '@/shared/utils/for
 import { BookingWizard } from '@/features/booking';
 import { GatewaySimulator } from '@/features/payment-mock';
 import { PaymentSuccessConfirmation } from '@/features/patient-portal';
+import { SecretaryDashboard } from '@/features/secretary';
 import {
   Calendar,
   CreditCard,
@@ -21,10 +22,9 @@ import {
   Unlock,
   Layers,
   ArrowRight,
-  Database,
+  Clock,
   Building,
   UserCheck,
-  Clock,
   Sparkles,
   FileSpreadsheet,
   PlusCircle,
@@ -57,15 +57,9 @@ export const AppLayout: React.FC = () => {
   const patientWallet = walletRepository.getByPatientId(currentUser.id);
   const walletBalance = patientWallet ? patientWallet.balance : 0;
 
-  // Secretary view calculations
-  const secretaryBranchId = currentRole === 'SECRETARY_TEHRAN' ? 'TEHRAN' : 'ISFAHAN';
-  const branchAppointments = allAppointments.filter(
-    (a) => a.branchId === secretaryBranchId || a.branchId === 'ONLINE'
-  );
-
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Scope and Roadmap Banner for Work Package WP-02 */}
+      {/* Scope and Roadmap Banner for Work Packages */}
       <section
         aria-label="وضعیت بسته کاری"
         className="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-xl border border-teal-500/30"
@@ -74,24 +68,24 @@ export const AppLayout: React.FC = () => {
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-1.5 bg-teal-500/20 text-teal-300 border border-teal-500/40 px-3 py-1 rounded-full text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              بستهٔ کاری WP-02: جریان نماینده (رزرو آنلاین نوبت، بیمه پلکانی و درگاه شاپرک)
+              بستهٔ کاری WP-03: میز کار منشی، اصلاح دستی بیمه و مهار قفل نرم (FLOW-03)
             </div>
             <h2 className="text-xl font-bold tracking-tight">
-              جریان کامل نوبت‌گیری آنلاین زیر ۳ دقیقه و محاسبهٔ هوشمند سهم بیمه
+              مدیریت هوشمند پذیرش، بررسی مدارک بالینی و مهار مانده‌حساب بیماران
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
-              این ماژول جریان کاربر (FLOW-02) را از انتخاب خدمت و پزشک تا استعلام آنی بیمه، آپلود مدارک و پرداخت در درگاه شبیه‌ساز شاپرک بدون دخالت منشی و در کمتر از ۳ دقیقه پوشش می‌دهد.
+              این ماژول پذیرش منشی (FLOW-03 / SCREEN-05) را با جدول تفکیکی شعب، بررسی مدارک و زوم تصویر، اصلاح دستی سهم بیمه همراه با محاسبهٔ لحظه‌ای دلتا، قفل نرم ویزیت آنلاین و بازگشایی اضطراری پوشش می‌دهد.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5 text-teal-400" />
-              <span>پایگاه داده: <strong>حافظه‌ای (LocalStorage)</strong></span>
+              <Layers className="w-3.5 h-3.5 text-teal-400" />
+              <span>وضعیت WP-02: <strong className="text-emerald-400">تکمیل‌شده ✅</strong></span>
             </span>
             <span className="bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-teal-400" />
-              <span>وضعیت WP-02: <strong className="text-emerald-400">فعال و عملیاتی</strong></span>
+              <span>وضعیت WP-03: <strong className="text-emerald-400">فعال و عملیاتی 🟢</strong></span>
             </span>
           </div>
         </div>
@@ -354,26 +348,40 @@ export const AppLayout: React.FC = () => {
                         {/* Action button */}
                         <div className="flex items-center gap-2 shrink-0">
                           {app.branchId === 'ONLINE' && (
-                            <button
-                              disabled={app.isSoftLocked}
-                              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition ${
-                                app.isSoftLocked
-                                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                                  : 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm'
-                              }`}
-                            >
-                              {app.isSoftLocked ? (
-                                <>
-                                  <Lock className="w-3.5 h-3.5" />
-                                  ورود مسدود (قفل بدهی)
-                                </>
-                              ) : (
-                                <>
-                                  <Video className="w-3.5 h-3.5" />
-                                  ورود به اتاق ویزیت
-                                </>
+                            <>
+                              {app.isSoftLocked && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    appointmentRepository.settleDebt(app.id);
+                                  }}
+                                  className="inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition shadow-sm"
+                                >
+                                  <CreditCard className="w-3.5 h-3.5" />
+                                  <span>پرداخت مابه‌التفاوت و رفع قفل</span>
+                                </button>
                               )}
-                            </button>
+                              <button
+                                disabled={app.isSoftLocked}
+                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition ${
+                                  app.isSoftLocked
+                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                    : 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm'
+                                }`}
+                              >
+                                {app.isSoftLocked ? (
+                                  <>
+                                    <Lock className="w-3.5 h-3.5" />
+                                    ورود مسدود (قفل بدهی)
+                                  </>
+                                ) : (
+                                  <>
+                                    <Video className="w-3.5 h-3.5" />
+                                    ورود به اتاق ویزیت
+                                  </>
+                                )}
+                              </button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -386,118 +394,9 @@ export const AppLayout: React.FC = () => {
         </div>
       )}
 
-      {/* Secretary View */}
+      {/* Secretary View (FLOW-03, SCREEN-05, WP-03) */}
       {(currentRole === 'SECRETARY_TEHRAN' || currentRole === 'SECRETARY_ISFAHAN') && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Building className="w-5 h-5 text-teal-600" />
-                <h3 className="font-bold text-slate-900 text-base">
-                  میز کار پذیرش {currentRole === 'SECRETARY_TEHRAN' ? 'شعبه مرکزی تهران' : 'شعبه شمس‌آبادی اصفهان'}
-                </h3>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                کنترل نوبت‌های روز، اصلاح دستی سهم بیمه تا پایان روز (Freeze Window) و مدیریت قفل نرم بدهکاری
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs">
-              <span className="bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-medium">
-                تعداد نوبت‌های شعبه: {toPersianDigits(branchAppointments.length)} نوبت
-              </span>
-            </div>
-          </div>
-
-          {/* Secretary Appointments Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold">
-                <tr>
-                  <th className="p-3.5">کد رهگیری</th>
-                  <th className="p-3.5">نام بیمار</th>
-                  <th className="p-3.5">پزشک معالج</th>
-                  <th className="p-3.5">خدمت</th>
-                  <th className="p-3.5">نوع نوبت</th>
-                  <th className="p-3.5">سهم پرداختی</th>
-                  <th className="p-3.5">وضعیت مالی</th>
-                  <th className="p-3.5">وضعیت قفل</th>
-                  <th className="p-3.5 text-center">عملیات شبیه‌سازی</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {branchAppointments.map((app) => (
-                  <tr key={app.id} className="hover:bg-slate-50/70 transition">
-                    <td className="p-3.5 font-mono font-bold text-slate-800">{app.trackingCode}</td>
-                    <td className="p-3.5 font-medium text-slate-900">{app.patientName}</td>
-                    <td className="p-3.5 text-slate-700">{app.doctorName}</td>
-                    <td className="p-3.5 text-slate-600">{app.serviceName}</td>
-                    <td className="p-3.5">
-                      {app.branchId === 'ONLINE' ? (
-                        <span className="bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded text-[11px] font-medium">
-                          آنلاین
-                        </span>
-                      ) : (
-                        <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-medium">
-                          حضوری
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3.5 font-semibold text-slate-800">
-                      {app.initialPatientPaid.toLocaleString('fa-IR')} تومان
-                    </td>
-                    <td className="p-3.5">
-                      {app.financialStatus === 'DEBIT' ? (
-                        <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded text-[11px] font-medium">
-                          بدهکار ({Math.abs(app.debtOrCreditBalance).toLocaleString('fa-IR')} تومان)
-                        </span>
-                      ) : app.financialStatus === 'CREDIT' ? (
-                        <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-medium">
-                          بستانکار
-                        </span>
-                      ) : (
-                        <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-medium">
-                          تسویه
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3.5">
-                      {app.isSoftLocked ? (
-                        <span className="inline-flex items-center gap-1 text-rose-600 font-semibold text-[11px]">
-                          <Lock className="w-3 h-3" /> قفل نرم
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold text-[11px]">
-                          <Unlock className="w-3 h-3" /> باز
-                        </span>
-                      )}
-                    </td>
-                    <td className="p-3.5 text-center">
-                      {app.isSoftLocked ? (
-                        <button
-                          onClick={() => {
-                            const reason = prompt(
-                              'لطفاً دلیل بازگشایی اضطراری قفل ورود را وارد کنید:',
-                              'هماهنگی تلفنی جهت تسویه در پایان روز'
-                            );
-                            if (reason) {
-                              appointmentRepository.emergencyUnlock(app.id, reason, currentUser.name);
-                            }
-                          }}
-                          className="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded text-[11px] font-medium transition"
-                        >
-                          بازگشایی اضطراری
-                        </button>
-                      ) : (
-                        <span className="text-slate-400 text-[11px]">آماده پیاده‌سازی WP-03</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <SecretaryDashboard />
       )}
 
       {/* Doctor View */}
