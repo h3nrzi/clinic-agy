@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderApp, switchAccount } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
@@ -17,11 +17,10 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
   });
 
   it('executes full FLOW-04 cycle: doctor conducts video consultation, fills 5-field clinical note, and enforces Field-Level RBAC for Patient and Secretary (AC-05)', async () => {
-    render(<App />);
+    renderApp();
 
-    // 1. Switch to Doctor role using Demo Toolbar
-    const doctorBtn = screen.getByRole('button', { name: /پزشک/ });
-    fireEvent.click(doctorBtn);
+    // 1. Sign in with the doctor account.
+    await switchAccount('DOCTOR');
 
     // Verify Doctor Dashboard (SCREEN-06) renders
     expect(screen.getByTestId('doctor-dashboard')).toBeDefined();
@@ -98,8 +97,7 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
     expect(completedApp?.clinicalNote?.diagnosis).toBe('میگرن ناشی از استرس');
 
     // 6. RBAC Check for PATIENT: Switch to Patient role
-    const patientBtn = screen.getByRole('button', { name: 'بیمار' });
-    fireEvent.click(patientBtn);
+    await switchAccount('PATIENT');
 
     // Verify Patient Appointment Card displays clinical note under Field-Level RBAC (AC-05):
     // Prescriptions and Follow-up MUST be displayed
@@ -112,8 +110,7 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
     expect(screen.queryByText('میگرن ناشی از استرس')).toBeNull();
 
     // 7. RBAC Check for SECRETARY: Switch to Secretary Tehran role
-    const secretaryBtn = screen.getByRole('button', { name: /منشی تهران/ });
-    fireEvent.click(secretaryBtn);
+    await switchAccount('SECRETARY_TEHRAN');
 
     // Click tracking code AGY-10142 to open Secretary Drawer
     const trackingBtn = screen.getByText('AGY-10142');
@@ -132,7 +129,7 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
   });
 
   it('allows eligible patient to enter teleconsultation room and inspect their consultation view', async () => {
-    render(<App />);
+    renderApp();
 
     // In Patient view, app-1 is confirmed and not soft-locked
     const enterRoomBtns = screen.getAllByRole('button', { name: /ورود به اتاق ویزیت/ });

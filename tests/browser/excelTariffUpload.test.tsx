@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderApp } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { tariffRepository } from '@/mocks/repositories/tariffRepository';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
@@ -36,7 +36,7 @@ describe('WP-05: 2-Sheet Excel Tariff Upload & Diff Preview (FLOW-06, AC-07, DEC
   });
 
   it('interactively loads mock 2-sheet Excel in UI, displays Diff table, and applies new tariffs to repository (AC-07)', async () => {
-    render(<App />);
+    renderApp();
 
     // Verify Admin Finance Dashboard
     expect(screen.getByTestId('financial-dashboard')).toBeDefined();

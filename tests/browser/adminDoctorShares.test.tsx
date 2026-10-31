@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderApp } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { calculateDoctorShare } from '@/features/financial-dashboard/logic/doctorShareCalculator';
@@ -28,7 +28,7 @@ describe('WP-05: Admin Financial Dashboard & Doctor Share Formula (FLOW-06, AC-0
   });
 
   it('renders financial dashboard KPIs and doctor performance table in UI (SCREEN-07)', () => {
-    render(<App />);
+    renderApp();
 
     expect(screen.getByTestId('financial-dashboard')).toBeDefined();
     expect(screen.getByText('کل درآمد ناخالص خدمات')).toBeDefined();
@@ -42,7 +42,7 @@ describe('WP-05: Admin Financial Dashboard & Doctor Share Formula (FLOW-06, AC-0
   });
 
   it('allows admin to modify clinic settings (tax percent, cancellation hours, penalty percent)', () => {
-    render(<App />);
+    renderApp();
 
     // Switch to Settings Tab
     const settingsTabBtn = screen.getByRole('button', { name: /تنظیمات درصد مالیات و جریمه لغو/ });

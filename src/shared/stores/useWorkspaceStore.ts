@@ -19,5 +19,5 @@ export function useWorkspaceSection<T extends string>(fallback:T):[T,(value:T)=>
 }
 // Demo role changes start at that role's overview, matching the existing workspace lifecycle.
 useAuthStore.subscribe((state, previous)=>{
-  if(state.currentRole!==previous.currentRole) useWorkspaceStore.getState().setSection(state.currentRole, WORKSPACE_LINKS[state.currentRole][0].id);
+  if(state.currentRole!==previous.currentRole || (state.isLoggedIn && !previous.isLoggedIn)) useWorkspaceStore.getState().setSection(state.currentRole, WORKSPACE_LINKS[state.currentRole][0].id);
 });
