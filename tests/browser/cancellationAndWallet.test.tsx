@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent, within } from '@testing-library/react';
+import { renderApp } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
 import { walletRepository } from '@/mocks/repositories/walletRepository';
@@ -24,7 +24,7 @@ describe('WP-05: Appointment Cancellation, 12-Hour Rule & Wallet Refund (FLOW-05
 
     const initialWallet = walletRepository.getByPatientId('pat-1')!.balance;
 
-    render(<App />);
+    renderApp();
 
     // In Patient Dashboard, locate app-future-safe card
     const trackingBadge = screen.getByText('AGY-10188');
@@ -67,7 +67,7 @@ describe('WP-05: Appointment Cancellation, 12-Hour Rule & Wallet Refund (FLOW-05
 
     const initialWallet = walletRepository.getByPatientId('pat-1')!.balance;
 
-    render(<App />);
+    renderApp();
 
     // Locate urgent appointment
     expect(screen.getByText('AGY-10189')).toBeDefined();

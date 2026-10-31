@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderApp } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
 import { walletRepository } from '@/mocks/repositories/walletRepository';
@@ -19,7 +19,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
 
   it('completes the full booking cycle (FLOW-02 / AC-01 / AC-02) from wizard to Shaparak gateway and confirmation', async () => {
     const startTime = Date.now();
-    render(<App />);
+    renderApp();
 
     // 1. Initial State: Click "رزرو نوبت جدید آنلاین"
     const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
@@ -132,7 +132,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
     const walletBefore = walletRepository.getByPatientId('pat-1');
     expect(walletBefore?.balance).toBe(40000);
 
-    render(<App />);
+    renderApp();
 
     // Go to booking
     const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
@@ -167,7 +167,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
   });
 
   it('allows canceling payment in gateway and returning to Step 4 without creating an appointment', () => {
-    render(<App />);
+    renderApp();
 
     // Go to booking
     fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ }));

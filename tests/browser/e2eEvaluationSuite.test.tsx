@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { renderApp, switchAccount } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { useScenarioStore } from '@/shared/stores/useScenarioStore';
@@ -17,17 +17,14 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
 
   it('validates the complete end-to-end lifecycle across all roles with under-3-minute benchmark (AC-01 through AC-08)', async () => {
     const cycleStartTime = Date.now();
-    render(<App />);
+    renderApp();
 
     // =========================================================================
-    // STEP 1: FLOW-01 & SCREEN-01 — Role Switching & Demo Shell Verification
+    // STEP 1: FLOW-01 & SCREEN-01 — Authenticated Shell Verification
     // =========================================================================
     expect(screen.getByText('کلینیک سلامت آژی')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'بیمار' })).toBeDefined();
-    expect(screen.getByRole('button', { name: /منشی تهران/ })).toBeDefined();
-    expect(screen.getByRole('button', { name: /منشی اصفهان/ })).toBeDefined();
-    expect(screen.getByRole('button', { name: /پزشک/ })).toBeDefined();
-    expect(screen.getByRole('button', { name: /مدیر مالی/ })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'خروج از حساب' })).toBeDefined();
+    expect(screen.getByText('نوبت‌های ثبت‌شدهٔ من')).toBeDefined();
 
     // =========================================================================
     // STEP 2: FLOW-02 / AC-01 / AC-02 — Representative Online Booking (< 180s)
@@ -85,7 +82,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     // STEP 3: FLOW-03 / AC-03 / AC-04 — Secretary Desk, Insurance Correction & Soft Lock
     // =========================================================================
     // Switch to Secretary Tehran
-    fireEvent.click(screen.getByRole('button', { name: /منشی تهران/ }));
+    await switchAccount('SECRETARY_TEHRAN');
     expect(screen.getByText(/میز کار پذیرش شعبه مرکزی تهران/)).toBeDefined();
 
     // Open insurance edit modal for AGY-10142
@@ -106,13 +103,13 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     });
 
     // Verify soft-lock in Patient view
-    fireEvent.click(screen.getByRole('button', { name: 'بیمار' }));
+    await switchAccount('PATIENT');
     expect(screen.getByText(/قفل نرم فعال است: به دلیل مابه‌التفاوت بدهی/)).toBeDefined();
     const lockedBtn = screen.getByRole('button', { name: /ورود مسدود \(قفل بدهی\)/ });
     expect((lockedBtn as HTMLButtonElement).disabled).toBe(true);
 
     // Switch back to Secretary and issue Emergency Unlock (AC-04)
-    fireEvent.click(screen.getByRole('button', { name: /منشی تهران/ }));
+    await switchAccount('SECRETARY_TEHRAN');
     const emergencyUnlockBtns = screen.getAllByRole('button', { name: /بازگشایی اضطراری/ });
     fireEvent.click(emergencyUnlockBtns[0]);
 
@@ -125,9 +122,8 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     // =========================================================================
     // STEP 4: FLOW-04 / AC-05 — Doctor Teleconsultation & Field-Level RBAC
     // =========================================================================
-    // Switch to Doctor role using demo toolbar
-    const toolbar = screen.getByLabelText('نوار ابزار دمو و سناریو');
-    fireEvent.click(within(toolbar).getByRole('button', { name: 'پزشک' }));
+    // Sign in with the doctor account.
+    await switchAccount('DOCTOR');
     expect(screen.getByTestId('doctor-dashboard')).toBeDefined();
 
     // Start video consultation
@@ -147,7 +143,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     fireEvent.click(screen.getByRole('button', { name: /بازگشت به کارتابل نوبت‌ها/ }));
 
     // Check RBAC for Patient (AC-05): Only fields 4 & 5 rendered
-    fireEvent.click(screen.getByRole('button', { name: 'بیمار' }));
+    await switchAccount('PATIENT');
     expect(screen.getByText('کپسول مسکن روزی ۱ عدد، پرهیز از بی‌خوابی')).toBeDefined();
     expect(screen.getByText('مراجعه مجدد ۲ هفته دیگر')).toBeDefined();
     expect(screen.queryByText('سردرد مزمن و احساس خستگی')).toBeNull();
@@ -155,7 +151,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     expect(screen.queryByText('میگرن ناشی از استرس')).toBeNull();
 
     // Check RBAC for Secretary (AC-05): Click tracking code to open Secretary Drawer
-    fireEvent.click(screen.getByRole('button', { name: /منشی تهران/ }));
+    await switchAccount('SECRETARY_TEHRAN');
     const trackingBtn = screen.getByText('AGY-10142');
     fireEvent.click(trackingBtn);
 
@@ -170,8 +166,9 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     // =========================================================================
     // STEP 5: FLOW-05 / AC-06 — 12-Hour Cancellation Rule & Wallet Refund
     // =========================================================================
-    // Return to Patient role to cancel app-future-urgent (<12h remaining)
-    fireEvent.click(screen.getByRole('button', { name: 'بیمار' }));
+    // Close the secretary drawer, then sign in as patient to cancel app-future-urgent (<12h remaining).
+    fireEvent.click(screen.getByRole('button', { name: 'بستن کشو' }));
+    await switchAccount('PATIENT');
 
     const urgentBadge = screen.getByText('AGY-10189');
     const urgentCard = urgentBadge.closest('.hover\\:bg-slate-50\\/60') || urgentBadge.parentElement?.parentElement?.parentElement!;
@@ -191,7 +188,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     // STEP 6: FLOW-06 / AC-07 / AC-08 — Excel Tariff Upload Diff & Doctor Share
     // =========================================================================
     // Switch to Admin Finance role
-    fireEvent.click(within(toolbar).getByRole('button', { name: /مدیر مالی/ }));
+    await switchAccount('ADMIN_FINANCE');
     expect(screen.getByTestId('financial-dashboard')).toBeDefined();
 
     // Switch to Excel Tariff Tab (Tab 2)
@@ -239,7 +236,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
 
   it('rigorously tests the Representative Booking under-3-minute benchmark (FLOW-02, AC-01, AC-02)', async () => {
     const bookingBenchmarkStart = Date.now();
-    render(<App />);
+    renderApp();
 
     // Step 1: Open Wizard
     fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ }));
@@ -277,23 +274,22 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     expect(elapsedSeconds).toBeLessThan(15);
   });
 
-  it('validates demo toolbar role-switching, scenario state injection and factory reset safety (DEC-FE-01)', () => {
-    render(<App />);
-
-    const toolbar = screen.getByLabelText('نوار ابزار دمو و سناریو');
+  it('validates account changes, demo scenario state injection and factory reset safety (DEC-FE-01)', async () => {
+    renderApp();
 
     // 1. Verify default role is Patient
     expect(useAuthStore.getState().currentRole).toBe('PATIENT');
 
     // 2. Switch to Secretary Isfahan
-    fireEvent.click(within(toolbar).getByRole('button', { name: /منشی اصفهان/ }));
+    await switchAccount('SECRETARY_ISFAHAN');
     expect(useAuthStore.getState().currentRole).toBe('SECRETARY_ISFAHAN');
     expect(screen.getByText(/میز کار پذیرش شعبه شمس‌آبادی اصفهان/)).toBeDefined();
 
     // 3. Switch to Patient and inject Indebted Scenario
-    fireEvent.click(within(toolbar).getByRole('button', { name: 'بیمار' }));
+    await switchAccount('PATIENT');
     expect(useAuthStore.getState().currentRole).toBe('PATIENT');
 
+    const toolbar = screen.getByLabelText('ابزارهای ارزیابی دمو');
     const scenarioBtn = within(toolbar).getByRole('button', { name: /تزریق بیمار بدهکار/ });
     fireEvent.click(scenarioBtn);
 

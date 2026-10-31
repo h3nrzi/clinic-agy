@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderApp, switchAccount } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
 import { walletRepository } from '@/mocks/repositories/walletRepository';
@@ -18,11 +18,10 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
   });
 
   it('executes full FLOW-03 cycle: manual insurance correction produces debit, activates soft lock, and emergency unlock resolves it (AC-03 & AC-04)', async () => {
-    render(<App />);
+    renderApp();
 
-    // 1. Switch to Secretary Tehran role using Demo Toolbar
-    const secretaryTehranBtn = screen.getByRole('button', { name: /منشی تهران/ });
-    fireEvent.click(secretaryTehranBtn);
+    // 1. Sign in with the Tehran secretary account.
+    await switchAccount('SECRETARY_TEHRAN');
 
     // Verify Secretary Dashboard پذیرش renders
     expect(screen.getByText(/میز کار پذیرش شعبه مرکزی تهران/)).toBeDefined();
@@ -70,9 +69,8 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     const patientWallet = walletRepository.getByPatientId('pat-1');
     expect(patientWallet?.balance).toBe(-137200);
 
-    // 6. Switch back to Patient role using Demo Toolbar
-    const patientBtn = screen.getByRole('button', { name: 'بیمار' });
-    fireEvent.click(patientBtn);
+    // 6. Sign in again with the patient account.
+    await switchAccount('PATIENT');
 
     // In Patient Workspace: Verify Soft Lock is enforced (AC-03)
     expect(screen.getByText(/قفل نرم فعال است: به دلیل مابه‌التفاوت بدهی/)).toBeDefined();
@@ -85,7 +83,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     expect(screen.getByRole('button', { name: /پرداخت مابه‌التفاوت و رفع قفل/ })).toBeDefined();
 
     // 7. Switch back to Secretary role to perform Emergency Unlock (AC-04)
-    fireEvent.click(screen.getByRole('button', { name: /منشی تهران/ }));
+    await switchAccount('SECRETARY_TEHRAN');
 
     // Verify Emergency Unlock button is available in the table
     const emergencyUnlockBtns = screen.getAllByRole('button', { name: /بازگشایی اضطراری/ });
@@ -111,7 +109,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     expect(unlockedApp?.emergencyUnlockReason).toContain('هماهنگی تلفنی');
 
     // 8. Switch back to Patient: verify Enter Visit Room button is immediately unlocked
-    fireEvent.click(screen.getByRole('button', { name: 'بیمار' }));
+    await switchAccount('PATIENT');
 
     expect(screen.getByText(/بازگشایی اضطراری توسط منشی انجام شد/)).toBeDefined();
     const activeEnterBtns = screen.getAllByRole('button', { name: /ورود به اتاق ویزیت/ });
@@ -120,10 +118,10 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
   });
 
   it('opens appointment drawer, views uploaded documents with zoom controls, and complies with Field-Level RBAC (AC-05)', async () => {
-    render(<App />);
+    renderApp();
 
     // Switch to Secretary
-    fireEvent.click(screen.getByRole('button', { name: /منشی تهران/ }));
+    await switchAccount('SECRETARY_TEHRAN');
 
     // Click on tracking code AGY-10142 to open drawer
     const trackingBtn = screen.getByText('AGY-10142');
@@ -175,7 +173,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
   });
 
   it('allows indebted patient to settle debt online directly and unlock the visit (AC-03 resolution)', async () => {
-    render(<App />);
+    renderApp();
 
     // Seed app-2 is an indebted patient (Mehdi Saeidi with balance -120,000)
     // Settle debt on app-2 directly

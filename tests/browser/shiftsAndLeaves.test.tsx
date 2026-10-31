@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import App from '@/App';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderApp } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { scheduleRepository } from '@/mocks/repositories/scheduleRepository';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
@@ -12,7 +12,7 @@ describe('WP-05: Doctor Shifts, Leave Requests & Secretary Approval (FLOW-05, S1
 
   it('allows doctor to view weekly shifts and submit leave request with conflict awareness (FLOW-05)', () => {
     useAuthStore.getState().switchRole('DOCTOR');
-    render(<App />);
+    renderApp();
 
     expect(screen.getByTestId('doctor-dashboard')).toBeDefined();
 
@@ -67,7 +67,7 @@ describe('WP-05: Doctor Shifts, Leave Requests & Secretary Approval (FLOW-05, S1
 
     // 2. Switch to Secretary Tehran
     useAuthStore.getState().switchRole('SECRETARY_TEHRAN');
-    render(<App />);
+    renderApp();
 
     // Switch to Doctor Leaves tab in Secretary Desk
     const leavesSectionBtn = screen.getByRole('button', { name: /بررسی مرخصی پزشکان/ });

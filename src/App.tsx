@@ -1,37 +1,42 @@
-import React from 'react';
-import { WorkspaceSidebar } from '@/app/layout/WorkspaceSidebar';
-import { RoleSwitcherToolbar } from '@/app/layout/RoleSwitcherToolbar';
-import { Navbar } from '@/app/layout/Navbar';
-import { AppLayout } from '@/app/layout/AppLayout';
+import {
+  createBrowserRouter,
+  createMemoryRouter,
+  type RouteObject,
+} from "react-router";
+import { RouterProvider } from "react-router/dom";
+import { PublicLayout } from "@/app/public/PublicLayout";
+import { PublicHome } from "@/app/public/PublicHome";
+import { DemoLogin } from "@/app/public/DemoLogin";
+import { WorkspaceRoute } from "@/app/routing/WorkspaceRoute";
+import { DEMO_ACCOUNTS } from "@/app/routing/roleRoutes";
+import { restoreDemoSession } from "@/shared/stores/useAuthStore";
 
-export const App: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900" dir="rtl">
-      {/* 1. Floating Demo & Role Switcher Toolbar (DEC-FE-01) */}
-      <RoleSwitcherToolbar />
-
-      {/* 2. Clinic Navbar with current user state */}
-      <Navbar />
-      <WorkspaceSidebar />
-
-      {/* 3. Core App Layout and Active Role Workspaces */}
-      <div className="flex-1 workspace-content" id="workspace">
-        <AppLayout />
-      </div>
-
-      {/* 4. Footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4">
-          <p>
-            کلینیک سلامت آژی • مراقبت یکپارچه و مدیریت شفاف
-          </p>
-          <p className="mt-1 text-[11px] text-slate-400">
-            محیط نمایشی با داده‌های ساختگی • پرداخت و پیامک شبیه‌سازی‌شده
-          </p>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
+export const appRoutes: RouteObject[] = [
+  {
+    element: <PublicLayout />,
+    children: [
+      { path: "/", element: <PublicHome /> },
+      { path: "/login", element: <DemoLogin /> },
+    ],
+  },
+];
+appRoutes.push(
+  ...DEMO_ACCOUNTS.map((account) => ({
+    path: account.path,
+    element: <WorkspaceRoute role={account.role} />,
+  })),
+);
+export function createAppRouter(initialEntries?: string[]) {
+  restoreDemoSession();
+  return initialEntries
+    ? createMemoryRouter(appRoutes, { initialEntries })
+    : createBrowserRouter(appRoutes);
+}
+export function App({
+  router,
+}: {
+  router: ReturnType<typeof createAppRouter>;
+}) {
+  return <RouterProvider router={router} />;
+}
 export default App;
