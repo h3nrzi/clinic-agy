@@ -81,7 +81,7 @@ export const Step4Summary: React.FC = () => {
             مشخصات نوبت ویزیت
           </h4>
 
-          <div className="space-y-3 text-xs">
+          <div className="booking-detail-grid space-y-3 text-xs">
             <div className="flex items-center gap-2.5 text-slate-700">
               <User className="w-4 h-4 text-slate-400 shrink-0" />
               <span className="text-slate-500">بیمار:</span>
@@ -139,7 +139,7 @@ export const Step4Summary: React.FC = () => {
         </div>
 
         {/* Right Column: Pre-invoice Financial Breakdown (SCREEN-03) */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm flex flex-col justify-between">
+        <div className="booking-invoice bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm flex flex-col justify-between">
           <div>
             <h4 className="font-bold text-slate-800 text-xs border-b border-slate-100 pb-2">
               ریز صورت‌حساب مالی (پیش‌فاکتور شفاف)
@@ -184,14 +184,14 @@ export const Step4Summary: React.FC = () => {
           <div className="pt-4 border-t border-slate-100 text-[11px] text-slate-400 flex items-center gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>
-              نوبت بلافاصله پس از تراکنش بانکی با وضعیت CONFIRMED قطعی شده و کد رهگیری صادر خواهد شد.
+              با انتخاب پرداخت موفق در درگاه نمایشی، نوبت قطعی و کد رهگیری صادر می‌شود. هیچ مبلغ واقعی برداشت نمی‌شود.
             </span>
           </div>
         </div>
       </div>
 
       {/* Action Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+      <div className="booking-actions">
         <button
           type="button"
           onClick={() => setStep(3)}
@@ -204,7 +204,7 @@ export const Step4Summary: React.FC = () => {
         <button
           type="button"
           onClick={handleProceedToPayment}
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md transition"
+          className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md transition"
         >
           <CreditCard className="w-4 h-4" />
           <span>انتقال به درگاه پرداخت شاپرک ({formatToman(finalPayable)})</span>

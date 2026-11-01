@@ -1,6 +1,6 @@
 import React from 'react';
 import { BookingStep } from '@/shared/stores/useBookingStore';
-import { Check, Clock } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface Props {
   currentStep: BookingStep;
@@ -18,21 +18,10 @@ export const BookingWizardHeader: React.FC<Props> = ({ currentStep, onStepClick 
   const numericStep = typeof currentStep === 'number' ? currentStep : 4;
 
   return (
-    <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="bg-teal-50 text-teal-700 border border-teal-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              رزرو نوبت
-            </span>
-            <span className="text-slate-400 text-xs">•</span>
-            <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-teal-600" />
-              زمان تقریبی: کمتر از ۳ دقیقه
-            </span>
-          </div>
-          <h2 className="text-lg font-bold text-slate-900 mt-1">رزرو نوبت آنلاین و محاسبه هوشمند بیمه</h2>
-        </div>
+    <div className="booking-heading">
+      <div><span role="status" className="text-teal-800 font-semibold">رزرو نوبت • مرحله {numericStep} از ۴</span>
+        <h2>رزرو نوبت آنلاین و محاسبه هوشمند بیمه</h2>
+        <p>شعبه، پزشک و زمان را انتخاب کنید؛ پیش از پرداخت، سهم بیمه و مبلغ نهایی را ببینید. برای ویرایش به مراحل تکمیل‌شده برگردید.</p>
       </div>
 
       {/* Stepper progress indicator */}
