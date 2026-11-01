@@ -10,6 +10,8 @@ import { useAuthStore } from './useAuthStore';
 export type BookingStep = 1 | 2 | 3 | 4 | 'GATEWAY' | 'CONFIRMED';
 
 export interface BookingState {
+  draftRevision: number;
+  pendingDocumentReads: number;
   // Step indicator
   step: BookingStep;
 
@@ -20,6 +22,7 @@ export interface BookingState {
   // Step 2: Doctor and Slot
   doctorId: string | null;
   slotDateTime: string | null;
+  preselectedSlotDateTime: string | null;
 
   // Step 3: Insurance and Documents
   baseInsuranceId: string;
@@ -37,9 +40,12 @@ export interface BookingState {
   setServiceId: (serviceId: string) => void;
   setDoctorId: (doctorId: string) => void;
   setSlotDateTime: (dateTime: string) => void;
+  setDefaultSlotDateTime: (dateTime: string) => void;
   setBaseInsuranceId: (id: string) => void;
   setSuppInsuranceId: (id: string) => void;
   addDocument: (doc: MedicalDocument) => void;
+  startDocumentRead: () => number;
+  finishDocumentRead: (revision: number) => boolean;
   removeDocument: (docId: string) => void;
   setGatewayError: (err: string | null) => void;
   
@@ -54,9 +60,11 @@ const DEFAULT_STATE = {
   serviceId: 'srv-1',
   doctorId: 'doc-1',
   slotDateTime: null,
+  preselectedSlotDateTime: null,
   baseInsuranceId: 'ins-base-tamin',
   suppInsuranceId: 'ins-supp-dana',
   documents: [] as MedicalDocument[],
+  pendingDocumentReads: 0,
   lastConfirmedAppointment: null as Appointment | null,
   gatewayError: null as string | null,
   transactionRef: null as string | null,
@@ -64,6 +72,7 @@ const DEFAULT_STATE = {
 
 export const useBookingStore = create<BookingState>((set, get) => ({
   ...DEFAULT_STATE,
+  draftRevision: 0,
 
   setStep: (step) => set({ step, gatewayError: null }),
   setBranchId: (branchId) => {
@@ -77,8 +86,18 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   setServiceId: (serviceId) => set({ serviceId }),
   setDoctorId: (doctorId) => set({ doctorId, slotDateTime: null }),
   setSlotDateTime: (slotDateTime) => set({ slotDateTime }),
+  setDefaultSlotDateTime: (slotDateTime) => set({ slotDateTime, preselectedSlotDateTime: slotDateTime }),
   setBaseInsuranceId: (baseInsuranceId) => set({ baseInsuranceId }),
   setSuppInsuranceId: (suppInsuranceId) => set({ suppInsuranceId }),
+  startDocumentRead: () => {
+    set(state => ({ pendingDocumentReads: state.pendingDocumentReads + 1 }));
+    return get().draftRevision;
+  },
+  finishDocumentRead: (revision) => {
+    if (get().draftRevision !== revision) return false;
+    set(state => ({ pendingDocumentReads: Math.max(0, state.pendingDocumentReads - 1) }));
+    return true;
+  },
   addDocument: (doc) => set((state) => ({ documents: [...state.documents, doc] })),
   removeDocument: (docId) =>
     set((state) => ({ documents: state.documents.filter((d) => d.id !== docId) })),
@@ -168,6 +187,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   resetBooking: () => {
     set({
       ...DEFAULT_STATE,
+      draftRevision: get().draftRevision + 1,
       slotDateTime: null,
       documents: [],
       lastConfirmedAppointment: null,

@@ -5,7 +5,7 @@ import { formatDateTime, toPersianDigits } from '@/shared/utils/formatters';
 import { ArrowLeft, ArrowRight, Calendar, Clock, UserCheck, CheckCircle2 } from 'lucide-react';
 
 export const Step2DoctorCalendar: React.FC = () => {
-  const { branchId, doctorId, slotDateTime, setDoctorId, setSlotDateTime, setStep } =
+  const { branchId, doctorId, slotDateTime, setDoctorId, setSlotDateTime, setDefaultSlotDateTime, setStep } =
     useBookingStore();
 
   const doctors = doctorRepository.getByBranch(branchId || 'ONLINE');
@@ -54,12 +54,10 @@ export const Step2DoctorCalendar: React.FC = () => {
     return slots;
   }, []);
 
-  // Default to first slot if none selected
+  // Capture the actual automatic default; manual choices do not change its baseline.
   React.useEffect(() => {
-    if (!slotDateTime && availableSlots[0]?.slots[0]) {
-      setSlotDateTime(availableSlots[0].slots[0].iso);
-    }
-  }, [slotDateTime, availableSlots, setSlotDateTime]);
+    if (!slotDateTime && availableSlots[0]?.slots[0]) setDefaultSlotDateTime(availableSlots[0].slots[0].iso);
+  }, [slotDateTime, availableSlots, setDefaultSlotDateTime]);
 
   const handleNext = () => {
     if (selectedDoctor && slotDateTime) {
@@ -71,15 +69,16 @@ export const Step2DoctorCalendar: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6">
       {/* 1. Doctor Selection */}
       <section className="space-y-3">
-        <label className="block text-sm font-bold text-slate-800">
+        <h3 className="block text-sm font-bold text-slate-800">
           ۱. انتخاب پزشک معالج
-        </label>
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {doctors.map((doc) => {
             const isSelected = selectedDoctor?.id === doc.id;
             return (
               <button
                 key={doc.id}
+                aria-pressed={isSelected}
                 type="button"
                 onClick={() => setDoctorId(doc.id)}
                 className={`p-4 rounded-xl text-right border-2 transition flex items-center gap-4 ${
@@ -90,7 +89,7 @@ export const Step2DoctorCalendar: React.FC = () => {
               >
                 <img
                   src={doc.avatar}
-                  alt={doc.name}
+                  alt=""
                   className="w-14 h-14 rounded-full object-cover border border-slate-200 shrink-0"
                 />
                 <div className="flex-1 min-w-0">
@@ -114,9 +113,9 @@ export const Step2DoctorCalendar: React.FC = () => {
       {/* 2. Slot Selection */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <label className="block text-sm font-bold text-slate-800">
+          <h3 className="block text-sm font-bold text-slate-800">
             ۲. انتخاب زمان ویزیت
-          </label>
+          </h3>
           <span className="text-xs text-slate-500 flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 text-teal-600" />
             ظرفیت نوبت‌های فعال
@@ -136,6 +135,8 @@ export const Step2DoctorCalendar: React.FC = () => {
                   return (
                     <button
                       key={slot.id}
+                      aria-pressed={isSelected}
+                      aria-label={`${group.label}، ساعت ${toPersianDigits(slot.time)}`}
                       type="button"
                       onClick={() => setSlotDateTime(slot.iso)}
                       className={`py-2 px-3 rounded-lg text-xs font-semibold transition border ${
@@ -168,7 +169,7 @@ export const Step2DoctorCalendar: React.FC = () => {
       )}
 
       {/* Action Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+      <div className="booking-actions">
         <button
           type="button"
           onClick={() => setStep(1)}

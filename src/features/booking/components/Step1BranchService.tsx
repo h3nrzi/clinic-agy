@@ -32,9 +32,9 @@ export const Step1BranchService: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6">
       {/* 1. Branch Selector */}
       <section className="space-y-3">
-        <label className="block text-sm font-bold text-slate-800">
+        <h3 className="block text-sm font-bold text-slate-800">
           ۱. انتخاب شعبه یا نوع ویزیت
-        </label>
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {branches.map((b) => {
             const isSelected = branchId === b.id;
@@ -84,9 +84,9 @@ export const Step1BranchService: React.FC = () => {
 
       {/* 2. Service Selector */}
       <section className="space-y-3">
-        <label className="block text-sm font-bold text-slate-800">
+        <h3 className="block text-sm font-bold text-slate-800">
           ۲. انتخاب خدمت تخصصی
-        </label>
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {availableServices.map((srv) => {
             const isSelected = selectedService?.id === srv.id;
@@ -139,7 +139,7 @@ export const Step1BranchService: React.FC = () => {
       </section>
 
       {/* Action Footer */}
-      <div className="flex justify-end pt-4 border-t border-slate-200">
+      <div className="booking-actions">
         <button
           type="button"
           onClick={handleNext}
