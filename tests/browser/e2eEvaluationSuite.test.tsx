@@ -170,8 +170,8 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     fireEvent.click(screen.getByRole('button', { name: 'بستن کشو' }));
     await switchAccount('PATIENT');
 
-    const urgentBadge = screen.getByText('AGY-10189');
-    const urgentCard = urgentBadge.closest('.hover\\:bg-slate-50\\/60') || urgentBadge.parentElement?.parentElement?.parentElement!;
+    expect(screen.getByText('AGY-10189')).toBeDefined();
+    const urgentCard = screen.getByRole('article', { name: 'نوبت AGY-10189' });
     const urgentCancelBtn = within(urgentCard as HTMLElement).getByRole('button', { name: /لغو نوبت/ });
     fireEvent.click(urgentCancelBtn);
 
