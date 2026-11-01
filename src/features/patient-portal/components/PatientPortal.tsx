@@ -11,7 +11,6 @@ import {
   toPersianDigits,
 } from "@/shared/utils/formatters";
 import { CancelAppointmentModal } from "./CancelAppointmentModal";
-import { PatientConsultationRoom } from "@/features/teleconsultation";
 import type { Appointment } from "@/shared/types";
 import {
   Calendar,
@@ -48,8 +47,6 @@ function PatientPortalContent() {
   const { currentUser } = useAuthStore();
   const navigate = useNavigate();
   const resetBooking = useBookingStore((s) => s.resetBooking);
-  const [activePatientConsultationApp, setActivePatientConsultationApp] =
-    useState<Appointment | null>(null);
   const [appointmentToCancel, setAppointmentToCancel] =
     useState<Appointment | null>(null);
   const [, refresh] = useState(0);
@@ -57,9 +54,6 @@ function PatientPortalContent() {
     () =>
       memoryDb.subscribe(() => {
         refresh((v) => v + 1);
-        setActivePatientConsultationApp((current) =>
-          current ? appointmentRepository.getById(current.id) || null : null,
-        );
       }),
     [],
   );
@@ -78,13 +72,6 @@ function PatientPortalContent() {
     navigate("/patient/booking");
     resetBooking();
   };
-  if (activePatientConsultationApp)
-    return (
-      <PatientConsultationRoom
-        appointment={activePatientConsultationApp}
-        onExit={() => setActivePatientConsultationApp(null)}
-      />
-    );
 
   return (
     <div className="patient-portal">
@@ -316,7 +303,7 @@ function PatientPortalContent() {
                           className="patient-button patient-button-primary"
                           onClick={() => {
                             if (!app.isSoftLocked)
-                              setActivePatientConsultationApp(app);
+                              navigate(`/patient/consultations/${encodeURIComponent(app.id)}`);
                           }}
                         >
                           {app.isSoftLocked ? (

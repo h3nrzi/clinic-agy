@@ -7,6 +7,7 @@ import {
   ClipboardList,
   RotateCcw,
 } from 'lucide-react';
+import { useUnsavedChanges } from '@/shared/navigation/UnsavedChanges';
 import { ClinicalNote } from '@/shared/types';
 
 interface ClinicalNoteFormProps {
@@ -35,11 +36,16 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
   const [prescriptions, setPrescriptions] = useState(initialNote?.prescriptions || '');
   const [followUp, setFollowUp] = useState(initialNote?.followUp || '');
 
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const values = [mainComplaint, findings, diagnosis, prescriptions, followUp];
+  const [savedValues, setSavedValues] = useState(values);
+  const hasUnsavedChanges = values.some((value, index) => value !== savedValues[index]);
+  useUnsavedChanges({ dirty: hasUnsavedChanges, onDiscard: () => {
+    setMainComplaint(savedValues[0]); setFindings(savedValues[1]); setDiagnosis(savedValues[2]);
+    setPrescriptions(savedValues[3]); setFollowUp(savedValues[4]);
+  } });
   const [validationError, setValidationError] = useState<string | null>(null);
   const handleChange = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
     setter(value);
-    setHasUnsavedChanges(true);
     setValidationError(null);
   };
 
@@ -50,7 +56,6 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
     setDiagnosis('میگرن ناشی از استرس');
     setPrescriptions('کپسول مسکن روزی ۱ عدد، پرهیز از بی‌خوابی');
     setFollowUp('مراجعه مجدد ۲ هفته دیگر');
-    setHasUnsavedChanges(true);
     setValidationError(null);
   };
 
@@ -60,7 +65,6 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
     setDiagnosis('');
     setPrescriptions('');
     setFollowUp('');
-    setHasUnsavedChanges(true);
     setValidationError(null);
   };
 
@@ -78,6 +82,7 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
       prescriptions: prescriptions.trim(),
       followUp: followUp.trim(),
     });
+    setSavedValues(values);
   };
 
   return (
@@ -100,10 +105,10 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
             type="button"
             onClick={handlePopulateSampleAC05}
             className="inline-flex items-center gap-1 bg-white hover:bg-slate-50 text-indigo-700 border border-indigo-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition"
-            title="پر کردن خودکار با مقادیر سناریوی آزمون AC-05"
+            title="درج نمونهٔ ساختگی برای ارزیابی فرم"
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            <span>درج سناریوی AC-05</span>
+            <span>درج نمونه یادداشت</span>
           </button>
 
           <button

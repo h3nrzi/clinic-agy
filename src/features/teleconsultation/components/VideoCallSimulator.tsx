@@ -122,10 +122,10 @@ export const VideoCallSimulator: React.FC<VideoCallSimulatorProps> = ({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
           </span>
-          <span className="text-xs font-bold text-white tracking-wide">ارتباط ویدیویی زنده</span>
+          <span className="text-xs font-bold text-white tracking-wide">ارتباط ویدیویی زنده (نمایشی)</span>
           <span className="hidden sm:inline-flex items-center gap-1 text-[11px] bg-slate-800/80 border border-slate-700/80 px-2 py-0.5 rounded-full text-emerald-300">
             <ShieldCheck className="w-3 h-3 text-emerald-400" />
-            E2EE بدون ضبط
+            بدون ضبط
           </span>
         </div>
 
@@ -172,7 +172,7 @@ export const VideoCallSimulator: React.FC<VideoCallSimulatorProps> = ({
               </h4>
               <p className="text-[11px] text-teal-300/80 mt-0.5 flex items-center justify-center gap-1">
                 <Sparkles className="w-3 h-3 text-teal-400" />
-                کیفیت HD • WebRTC شبیه‌سازی‌شده فعال
+                محیط آزمایشی ویزیت تصویری
               </p>
             </div>
           </div>
@@ -228,6 +228,8 @@ export const VideoCallSimulator: React.FC<VideoCallSimulatorProps> = ({
         {/* Stream Source Toggle (DEC-FE-02: Loopback or Mock animation) */}
         <button
           type="button"
+          aria-pressed={useRealWebcam}
+          aria-label="تغییر منبع تصویر"
           onClick={() => setUseRealWebcam(!useRealWebcam)}
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition border ${
             useRealWebcam
@@ -246,6 +248,7 @@ export const VideoCallSimulator: React.FC<VideoCallSimulatorProps> = ({
           {/* Mute Button */}
           <button
             type="button"
+            aria-pressed={isMuted}
             onClick={() => setIsMuted(!isMuted)}
             className={`p-2.5 sm:p-3 rounded-full transition shadow-md ${
               isMuted
@@ -261,6 +264,7 @@ export const VideoCallSimulator: React.FC<VideoCallSimulatorProps> = ({
           {/* Video Toggle Button */}
           <button
             type="button"
+            aria-pressed={isVideoOff}
             onClick={() => setIsVideoOff(!isVideoOff)}
             className={`p-2.5 sm:p-3 rounded-full transition shadow-md ${
               isVideoOff
@@ -290,6 +294,7 @@ export const VideoCallSimulator: React.FC<VideoCallSimulatorProps> = ({
         {/* Timer Pause/Play toggle for demo convenience */}
         <button
           type="button"
+          aria-pressed={isTimerPaused}
           onClick={() => setIsTimerPaused(!isTimerPaused)}
           className="text-slate-400 hover:text-slate-200 text-xs px-2 py-1 rounded transition"
           title="توقف موقت تایمر جهت دمو"

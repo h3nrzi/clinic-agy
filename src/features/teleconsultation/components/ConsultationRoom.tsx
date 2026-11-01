@@ -1,3 +1,5 @@
+import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
+import './teleconsultation.css';
 import React, { useState } from 'react';
 import {
   ArrowRight,
@@ -32,6 +34,8 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
   const [selectedDocForZoom, setSelectedDocForZoom] = useState<PatientDocument | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
+  const successRef = useDialogFocus(() => setIsSuccessModalOpen(false), isSuccessModalOpen);
+
   const handleSaveClinicalNote = (noteData: {
     mainComplaint: string;
     findings: string;
@@ -46,7 +50,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
   return (
     <div
       data-testid="doctor-consultation-room"
-      className="space-y-6"
+      className="consultation-workspace space-y-6"
     >
       {/* Top Banner Navigation & Patient Info Header */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -134,6 +138,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
           <div className="flex items-center border-b border-slate-200 bg-slate-50/80 px-4 pt-3 gap-2 overflow-x-auto text-xs">
             <button
               type="button"
+              aria-pressed={activeTab === 'CLINICAL_NOTE'}
               onClick={() => setActiveTab('CLINICAL_NOTE')}
               className={`flex items-center gap-1.5 pb-3 px-3 border-b-2 font-bold transition whitespace-nowrap ${
                 activeTab === 'CLINICAL_NOTE'
@@ -147,6 +152,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
 
             <button
               type="button"
+              aria-pressed={activeTab === 'DOCUMENTS'}
               onClick={() => setActiveTab('DOCUMENTS')}
               className={`flex items-center gap-1.5 pb-3 px-3 border-b-2 font-bold transition whitespace-nowrap ${
                 activeTab === 'DOCUMENTS'
@@ -160,6 +166,7 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
 
             <button
               type="button"
+              aria-pressed={activeTab === 'DETAILS'}
               onClick={() => setActiveTab('DETAILS')}
               className={`flex items-center gap-1.5 pb-3 px-3 border-b-2 font-bold transition whitespace-nowrap ${
                 activeTab === 'DETAILS'
@@ -274,7 +281,10 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
       {/* Success Confirmation Modal */}
       {isSuccessModalOpen && (
         <div
+          ref={successRef}
           role="dialog"
+          tabIndex={-1}
+          aria-labelledby="clinical-success-title"
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in"
         >
@@ -284,14 +294,14 @@ export const ConsultationRoom: React.FC<ConsultationRoomProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <h3 className="font-bold text-slate-900 text-base">پرونده بالینی با موفقیت ثبت شد</h3>
+              <h3 id="clinical-success-title" className="font-bold text-slate-900 text-base">پرونده بالینی با موفقیت ثبت شد</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                یادداشت ۵ فیلدی بیمار <strong>{appointment.patientName}</strong> در دیتابیس ثبت و وضعیت نوبت به حالت <strong>تکمیل‌شده (COMPLETED)</strong> تغییر یافت.
+                پروندهٔ بیمار <strong>{appointment.patientName}</strong> ثبت شد و ویزیت تکمیل شده است.
               </p>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 text-right space-y-1">
-              <div className="font-bold text-slate-800">اعمال ماتریس محرمانگی AC-05:</div>
+              <div className="font-bold text-slate-800">دسترسی به پرونده:</div>
               <div>• بیمار فقط نسخه و دستور پیگیری را مشاهده خواهد کرد.</div>
               <div>• منشی فقط دستور پیگیری را مشاهده خواهد کرد.</div>
             </div>

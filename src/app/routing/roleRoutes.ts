@@ -1,4 +1,7 @@
 import type { Role } from "@/shared/types";
+import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
+import { useAuthStore } from '@/shared/stores/useAuthStore';
+import { canOpenConsultation } from './consultationAccess';
 export const DEMO_ACCOUNTS: { role: Role; label: string; path: string }[] = [
   { role: "PATIENT", label: "بیمار", path: "/patient" },
   { role: "SECRETARY_TEHRAN", label: "منشی تهران", path: "/secretary/tehran" },
@@ -23,7 +26,15 @@ export const WORKSPACE_LINKS: Record<Role, WorkspaceDestination[]> = {
 };
 /** Resume only a known internal destination authorized for this exact account role. */
 export function permittedReturnPath(destination: unknown, role: Role) {
-  return typeof destination === 'string' && WORKSPACE_LINKS[role].some(link => link.path === destination)
-    ? destination
-    : dashboardPath(role);
+  if (typeof destination !== 'string') return dashboardPath(role);
+  if (WORKSPACE_LINKS[role].some(link => link.path === destination)) return destination;
+  const room = destination.match(/^\/(patient|doctor)\/consultations\/([^/?#]+)$/);
+  if (room && ((role === 'PATIENT' && room[1] === 'patient') || (role === 'DOCTOR' && room[1] === 'doctor'))) {
+    try {
+      const appointment = appointmentRepository.getById(decodeURIComponent(room[2]));
+      const user = useAuthStore.getState().currentUser;
+      if (appointment && user.role === role && canOpenConsultation(appointment, role, user.id)) return destination;
+    } catch { /* Malformed internal resource URL falls back to the account dashboard. */ }
+  }
+  return dashboardPath(role);
 }

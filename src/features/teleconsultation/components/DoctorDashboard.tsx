@@ -1,3 +1,4 @@
+import './teleconsultation.css';
 import { DoctorFinancialSummary } from './DoctorFinancialSummary';
 import React, { useState } from 'react';
 import {
@@ -64,7 +65,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   return (
     <div
       data-testid="doctor-dashboard"
-      className="space-y-6 text-slate-800"
+      className="doctor-workspace space-y-6 text-slate-800"
     >
       {/* Doctor Profile Banner */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -74,7 +75,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-bold text-slate-900 text-lg">{doctorName}</h2>
+              <h1 className="font-bold text-slate-900 text-lg">{activeTab === 'APPOINTMENTS' ? 'کارتابل پزشک' : 'شیفت‌ها و مرخصی'}</h1><p className="doctor-name">{doctorName}</p>
               <span className="bg-teal-50 text-teal-700 border border-teal-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
                 {specialty}
               </span>
@@ -104,7 +105,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
       {currentDoc && <DoctorFinancialSummary doctor={currentDoc} appointments={appointments} />}
       {activeTab === 'SHIFTS_AND_LEAVES' ? (
-        <div className="space-y-6">
+        <div className="doctor-schedule-grid space-y-6">
           {/* Shifts Section */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -124,6 +125,9 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {doctorShifts.length === 0 && (
+                <p className="doctor-empty-state">شیفتی برای شما ثبت نشده است. برنامه پس از ثبت مسئول پذیرش یا مدیر اینجا نمایش داده می‌شود.</p>
+              )}
               {doctorShifts.map((shift) => (
                 <div
                   key={shift.id}
@@ -225,7 +229,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       ) : (
         <>
           {/* KPI Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="doctor-metrics grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
               <div className="text-xs text-slate-500 font-medium">کل نوبت‌های ثبت‌شده</div>
               <div className="text-2xl font-bold text-slate-900 mt-2">{toPersianDigits(totalToday)}</div>
@@ -235,7 +239,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
               <div className="text-xs text-slate-500 font-medium">ویزیت‌های تصویری آنلاین</div>
               <div className="text-2xl font-bold text-teal-700 mt-2">{toPersianDigits(onlineCount)}</div>
-              <div className="text-[11px] text-teal-600/80 mt-1">تله‌مدیسین بدون ضبط</div>
+              <div className="text-[11px] text-teal-600/80 mt-1">برگزاری ویزیت از راه دور</div>
             </div>
 
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
@@ -252,10 +256,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           </div>
 
           {/* Filter and Search Bar */}
-          <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="doctor-filters bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                aria-pressed={filterType === 'ALL'}
                 onClick={() => setFilterType('ALL')}
                 className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                   filterType === 'ALL'
@@ -268,6 +273,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
               <button
                 type="button"
+                aria-pressed={filterType === 'ONLINE'}
                 onClick={() => setFilterType('ONLINE')}
                 className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                   filterType === 'ONLINE'
@@ -280,6 +286,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
               <button
                 type="button"
+                aria-pressed={filterType === 'COMPLETED'}
                 onClick={() => setFilterType('COMPLETED')}
                 className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                   filterType === 'COMPLETED'
@@ -305,7 +312,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           </div>
 
           {/* Appointments List / Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="doctor-queue bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-teal-600" />
@@ -325,7 +332,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 filteredAppointments.map((app) => (
                   <div
                     key={app.id}
-                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition"
+                    className="doctor-queue-row p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition"
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">

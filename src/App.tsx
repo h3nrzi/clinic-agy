@@ -13,6 +13,7 @@ import { AppLayout } from '@/app/layout/AppLayout';
 import { PatientPortal } from '@/features/patient-portal/components/PatientPortal';
 import { BookingPage } from '@/features/booking/components/BookingPage';
 import { SecretaryDashboard } from '@/features/secretary';
+import { ConsultationRoute } from '@/app/routing/ConsultationRoute';
 import { DoctorWorkspace } from '@/app/routing/DoctorWorkspace';
 import { FinanceOverview } from '@/features/financial-dashboard/components/FinanceOverview';
 import { FinancialDashboard } from '@/features/financial-dashboard';
@@ -37,9 +38,11 @@ appRoutes.push(
       children: account.role === 'PATIENT' ? [
         { index: true, element: <PatientPortal /> },
         { path: 'booking', element: <BookingPage /> },
+        { path: 'consultations/:appointmentId', element: <ConsultationRoute /> },
         { path: '*', element: <NotFound /> },
       ] : account.role === 'DOCTOR' ? [
         { index: true, element: <DoctorWorkspace key="appointments" section="APPOINTMENTS" /> },
+        { path: 'consultations/:appointmentId', element: <ConsultationRoute /> },
         { path: 'shifts', element: <DoctorWorkspace key="shifts" section="SHIFTS_AND_LEAVES" /> },
         { path: '*', element: <NotFound /> },
       ] : account.role === 'ADMIN_FINANCE' ? [
