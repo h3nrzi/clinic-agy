@@ -146,6 +146,7 @@ describe('Role and resource room matrix', () => {
     renderApp('/patient/consultations/app-1');
     expect(screen.queryByTestId('patient-consultation-room') !== null).toBe(role === 'PATIENT');
     if (role !== 'PATIENT') expect(screen.queryByText('AGY-10142')).toBeNull();
+    if (role !== 'PATIENT') fireEvent.click(screen.getByRole('link',{name:'بازگشت به فضای کار من'}));
     expect(screen.getByRole('button',{name:`حساب کاربری ${ROLE_PROFILES[role].name}`})).toBeDefined();
   });
   it('refreshes a doctor room and changes appointment without retaining the previous draft', async () => {
@@ -181,4 +182,27 @@ describe('Role and resource room matrix', () => {
     expect(screen.getByText('PUBLIC followup')).toBeDefined();
     expect(screen.queryByText(/PRIVATE/)).toBeNull();
   });
+});
+
+it('shows connected leave labels and returns keyboard focus after Escape', async () => {
+  memoryDb.resetToFactoryDefaults(); useAuthStore.getState().switchRole('DOCTOR');
+  renderApp('/doctor/shifts');
+  const openers = screen.getAllByRole('button',{name:/ثبت درخواست مرخصی/});
+  openers[0].focus();
+  fireEvent.click(openers[0]);
+  expect(screen.getByRole('dialog',{name:'ثبت درخواست مرخصی / تغییر شیفت'})).toBeDefined();
+  expect(screen.getByLabelText('از تاریخ (شروع):')).toBeDefined();
+  expect(screen.getByLabelText('تا تاریخ (پایان):')).toBeDefined();
+  expect(screen.getByLabelText('علت مرخصی / توضیحات:')).toBeDefined();
+  fireEvent.keyDown(document,{key:'Escape'});
+  expect(screen.queryByRole('dialog')).toBeNull();
+  expect(document.activeElement).toBe(openers[0]);
+});
+it('avoids false dirty warnings when text is restored to its saved value', () => {
+  memoryDb.resetToFactoryDefaults(); useAuthStore.getState().switchRole('DOCTOR');
+  renderApp('/doctor/consultations/app-1');
+  changeNote(); changeNote('');
+  fireEvent.click(screen.getByRole('button',{name:'خروج از اتاق ویزیت'}));
+  expect(screen.queryByRole('dialog',{name:'ترک کار ناتمام؟'})).toBeNull();
+  expect(screen.getByTestId('doctor-dashboard')).toBeDefined();
 });

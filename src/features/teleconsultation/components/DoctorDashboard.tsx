@@ -125,6 +125,9 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {doctorShifts.length === 0 && (
+                <p className="doctor-empty-state">شیفتی برای شما ثبت نشده است. برنامه پس از ثبت مسئول پذیرش یا مدیر اینجا نمایش داده می‌شود.</p>
+              )}
               {doctorShifts.map((shift) => (
                 <div
                   key={shift.id}

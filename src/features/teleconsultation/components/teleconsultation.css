@@ -9,6 +9,7 @@
 .doctor-workspace>div,.consultation-workspace>div{min-width:0}
 .consultation-workspace .consultation-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;align-items:start}
 .consultation-video,.consultation-editor{min-width:0}
+.consultation-workspace .consultation-video{position:static}
 .consultation-editor .clinical-form{font-size:.875rem;line-height:1.7}
 .consultation-editor textarea{min-height:88px;resize:vertical;font-size:.875rem;scroll-margin-block:100px}
 .consultation-editor label{gap:.5rem;flex-wrap:wrap}
@@ -16,8 +17,7 @@
 .consultation-workspace [data-testid="video-call-simulator"]>div:last-child>div{flex-wrap:wrap}
 @media(min-width:1024px){
  .consultation-workspace .consultation-columns{grid-template-columns:minmax(280px,5fr) minmax(0,7fr);gap:1.25rem}
- .consultation-video{position:sticky;top:1rem}
- .doctor-workspace [data-testid="doctor-financial-summary"]{margin-top:1rem}
+ .consultation-workspace .consultation-video{position:sticky;top:1rem}
 }
 @media(max-width:639px){
  .consultation-editor>div:first-child{padding-inline:.5rem;gap:0}
@@ -28,11 +28,11 @@
 @media(prefers-reduced-motion:reduce){
  .doctor-workspace *,.consultation-workspace *{animation:none!important;transition:none!important}
 }
-.doctor-workspace .doctor-finance{display:grid;gap:1rem;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:1rem}
+.doctor-workspace .doctor-finance{color:var(--ink);display:grid;gap:1rem;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:1rem}
 .doctor-workspace .doctor-finance h3{font-weight:700;font-size:.875rem}
 .doctor-workspace .doctor-finance p{color:var(--muted);font-size:.75rem;margin-top:.25rem}
 .doctor-workspace .doctor-finance dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
-.doctor-workspace .doctor-finance dl>div{min-width:0;border-inline-start:2px solid #e2e8f0;padding-inline-start:.75rem}
+.doctor-workspace .doctor-finance dl>div{display:block;min-width:0;border-inline-start:2px solid #e2e8f0;padding-inline-start:.75rem}
 .doctor-workspace .doctor-finance dt{font-size:.75rem;color:var(--muted)}
 .doctor-workspace .doctor-finance dd{font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .doctor-workspace .doctor-finance dl>div:last-child{border-color:#0f766e;color:#0f766e}
@@ -68,3 +68,4 @@
 .doctor-leave-dialog label{color:var(--ink)}
 .doctor-leave-dialog>div:first-of-type{align-items:flex-start}
 @media(max-width:479px){.doctor-leave-dates{grid-template-columns:1fr}.doctor-leave-dialog{padding:1rem}}
+.doctor-empty-state{grid-column:1/-1;background:var(--canvas);border:1px dashed var(--line);padding:1.5rem;text-align:center;color:var(--muted);line-height:1.8}
