@@ -1,308 +1,356 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useAuthStore } from '@/shared/stores/useAuthStore';
-import { useBookingStore } from '@/shared/stores/useBookingStore';
-import { memoryDb } from '@/mocks/db/memoryDb';
-import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
-import { walletRepository } from '@/mocks/repositories/walletRepository';
-import { formatToman, formatDateTime, toPersianDigits } from '@/shared/utils/formatters';
-import { CancelAppointmentModal } from './CancelAppointmentModal';
-import { PatientConsultationRoom } from '@/features/teleconsultation';
-import type { Appointment } from '@/shared/types';
-import { CheckCircle2, Calendar, CreditCard, Video, AlertCircle, Lock, Unlock, Building, PlusCircle, XCircle } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { useAuthStore } from "@/shared/stores/useAuthStore";
+import { useBookingStore } from "@/shared/stores/useBookingStore";
+import { memoryDb } from "@/mocks/db/memoryDb";
+import { appointmentRepository } from "@/mocks/repositories/appointmentRepository";
+import { walletRepository } from "@/mocks/repositories/walletRepository";
+import {
+  formatToman,
+  formatDateTime,
+  toPersianDigits,
+} from "@/shared/utils/formatters";
+import { CancelAppointmentModal } from "./CancelAppointmentModal";
+import { PatientConsultationRoom } from "@/features/teleconsultation";
+import type { Appointment } from "@/shared/types";
+import {
+  Calendar,
+  CreditCard,
+  Video,
+  Lock,
+  Unlock,
+  PlusCircle,
+} from "lucide-react";
+import "./patient-portal.css";
 
-/** Patient route leaf; booking steps and cancellation remain local interactions. */
+/** The identity key clears private room and dialog state when the demo account changes. */
 export function PatientPortal() {
-  const patientId = useAuthStore(state => state.currentUser.id);
+  const patientId = useAuthStore((state) => state.currentUser.id);
   return <PatientPortalContent key={patientId} />;
+}
+
+const appointmentLabels: Record<Appointment["status"], string> = {
+  CONFIRMED: "قطعی‌شده",
+  IN_CONSULTATION: "در حال ویزیت",
+  PENDING_PAYMENT: "در انتظار پرداخت",
+  COMPLETED: "ویزیت تکمیل‌شده",
+  CANCELLED_BY_PATIENT: "لغو شده توسط بیمار",
+  CANCELLED_BY_CLINIC: "لغو شده توسط کلینیک",
+};
+
+function visitLocation(app: Appointment) {
+  return app.branchId === "ONLINE"
+    ? "ویزیت آنلاین"
+    : `شعبه ${app.branchId === "TEHRAN" ? "تهران" : "اصفهان"}`;
 }
 
 function PatientPortalContent() {
   const { currentUser } = useAuthStore();
   const navigate = useNavigate();
-  const resetBooking = useBookingStore(s => s.resetBooking);
-  const [activePatientConsultationApp, setActivePatientConsultationApp] = useState<Appointment | null>(null);
-  const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
+  const resetBooking = useBookingStore((s) => s.resetBooking);
+  const [activePatientConsultationApp, setActivePatientConsultationApp] =
+    useState<Appointment | null>(null);
+  const [appointmentToCancel, setAppointmentToCancel] =
+    useState<Appointment | null>(null);
   const [, refresh] = useState(0);
-  useEffect(() => memoryDb.subscribe(() => {
-    refresh(v => v + 1);
-    setActivePatientConsultationApp(current => current ? appointmentRepository.getById(current.id) || null : null);
-  }), []);
-  const patientAppointments = appointmentRepository.getAll().filter(a => a.patientId === currentUser.id);
-  const nextAppointment = [...patientAppointments].filter(a => a.status === 'CONFIRMED' && new Date(a.dateTime).getTime() > Date.now()).sort((a,b) => a.dateTime.localeCompare(b.dateTime))[0];
-  const walletBalance = walletRepository.getByPatientId(currentUser.id)?.balance || 0;
-  if (activePatientConsultationApp) return <PatientConsultationRoom appointment={activePatientConsultationApp} onExit={() => setActivePatientConsultationApp(null)} />;
-  return <div className="space-y-6">
-              {/* Patient Quick Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {/* Wallet Card */}
-                <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm relative overflow-hidden">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-500">کیف پول بیمار</span>
-                    <CreditCard className="w-5 h-5 text-teal-600" />
-                  </div>
-                  <div className="mt-3">
-                    <div
-                      className={`text-2xl font-bold ${
-                        walletBalance < 0
-                          ? 'text-rose-600'
-                          : walletBalance > 0
-                          ? 'text-emerald-600'
-                          : 'text-slate-800'
-                      }`}
-                    >
-                      {formatToman(walletBalance)}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                      {walletBalance < 0
-                        ? 'دارای مانده بدهی — نوبت‌های آنلاین مشمول قفل نرم می‌شوند.'
-                        : walletBalance > 0
-                        ? 'دارای بستانکاری قابل کسر از نوبت بعدی'
-                        : 'حساب تسویه است (بدون بدهی یا بستانکاری)'}
-                    </div>
-                  </div>
-                </div>
+  useEffect(
+    () =>
+      memoryDb.subscribe(() => {
+        refresh((v) => v + 1);
+        setActivePatientConsultationApp((current) =>
+          current ? appointmentRepository.getById(current.id) || null : null,
+        );
+      }),
+    [],
+  );
+  const patientAppointments = appointmentRepository
+    .getAll()
+    .filter((a) => a.patientId === currentUser.id);
+  const nextAppointment = [...patientAppointments]
+    .filter(
+      (a) =>
+        a.status === "CONFIRMED" && new Date(a.dateTime).getTime() > Date.now(),
+    )
+    .sort((a, b) => a.dateTime.localeCompare(b.dateTime))[0];
+  const walletBalance =
+    walletRepository.getByPatientId(currentUser.id)?.balance || 0;
+  const startBooking = () => {
+    navigate("/patient/booking");
+    resetBooking();
+  };
+  if (activePatientConsultationApp)
+    return (
+      <PatientConsultationRoom
+        appointment={activePatientConsultationApp}
+        onExit={() => setActivePatientConsultationApp(null)}
+      />
+    );
 
-                {/* Active Appointments Count */}
-                <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-500">نوبت‌های رزروشده</span>
-                    <Calendar className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-2xl font-bold text-slate-800">
-                      {toPersianDigits(patientAppointments.length)} نوبت
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                      شامل نوبت‌های حضوری شعب و ویزیت آنلاین
-                    </div>
-                  </div>
-                </div>
+  return (
+    <div className="patient-portal">
+      <header className="patient-page-heading">
+        <div>
+          <p className="patient-eyebrow">فضای بیمار</p>
+          <h1>نوبت‌ها و پرونده من</h1>
+          <p>زمان ویزیت، وضعیت حساب و توصیه‌های پزشک را اینجا ببینید.</p>
+        </div>
+        <button
+          type="button"
+          className="patient-button patient-button-primary"
+          onClick={startBooking}
+        >
+          <PlusCircle aria-hidden="true" size={20} />
+          رزرو نوبت جدید
+        </button>
+      </header>
 
-                {/* Scenario Status Indicator */}
-                <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-500">نوبت بعدی</span>
-                    <AlertCircle className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-base font-bold text-slate-800">
-                      {nextAppointment ? formatDateTime(nextAppointment.dateTime) : 'نوبت پیش رو ندارید'}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">
-                      {nextAppointment ? nextAppointment.doctorName : 'برای دریافت خدمات، نوبت جدید رزرو کنید'}
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <div className="patient-overview">
+        <section
+          className="patient-next patient-panel"
+          aria-labelledby="patient-next-title"
+        >
+          <div className="patient-section-label">
+            <Calendar aria-hidden="true" size={21} />
+            <h2 id="patient-next-title">نوبت بعدی شما</h2>
+          </div>
+          {nextAppointment ? (
+            <>
+              <p className="patient-next-time">
+                {formatDateTime(nextAppointment.dateTime)}
+              </p>
+              <p className="patient-next-doctor">
+                {nextAppointment.doctorName}
+              </p>
+              <p>
+                {nextAppointment.serviceName} · {visitLocation(nextAppointment)}
+              </p>
+              <p className="patient-helper">
+                جزئیات و اقدامات این نوبت در فهرست زیر در دسترس است.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="patient-next-time">نوبت پیش رو ندارید</p>
+              <p>برای دریافت خدمات، نوبت جدید رزرو کنید.</p>
+            </>
+          )}
+        </section>
+        <section
+          className="patient-wallet patient-panel"
+          aria-labelledby="patient-wallet-title"
+        >
+          <div className="patient-section-label">
+            <CreditCard aria-hidden="true" size={21} />
+            <h2 id="patient-wallet-title">کیف پول بیمار</h2>
+          </div>
+          <p
+            className={`patient-wallet-amount ${walletBalance < 0 ? "patient-debt" : walletBalance > 0 ? "patient-credit" : ""}`}
+          >
+            {formatToman(walletBalance)}
+          </p>
+          <p className="patient-wallet-state">
+            {walletBalance < 0
+              ? "مانده بدهی"
+              : walletBalance > 0
+                ? "مانده بستانکاری"
+                : "حساب تسویه است"}
+          </p>
+          <p className="patient-helper">
+            {walletBalance < 0
+              ? "دارای مانده بدهی — نوبت‌های آنلاین مشمول قفل نرم می‌شوند."
+              : walletBalance > 0
+                ? "دارای بستانکاری قابل کسر از نوبت بعدی"
+                : "بدون بدهی یا بستانکاری"}
+          </p>
+        </section>
+      </div>
 
-              {/* Patient Appointments List */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <section
+        className="patient-appointments"
+        aria-labelledby="patient-appointments-title"
+      >
+        <div className="patient-list-heading">
+          <div>
+            <h2 id="patient-appointments-title">نوبت‌های ثبت‌شدهٔ من</h2>
+            <p>جزئیات نوبت، ورود به ویزیت و نسخه و دستور پیگیری</p>
+          </div>
+          <span className="patient-count">
+            {toPersianDigits(patientAppointments.length)} نوبت ثبت‌شده
+          </span>
+        </div>
+        {patientAppointments.length === 0 ? (
+          <div className="patient-empty patient-panel">
+            <Calendar aria-hidden="true" size={32} />
+            <h3>هنوز نوبتی ثبت نکرده‌اید</h3>
+            <p>
+              پس از رزرو، جزئیات نوبت و وضعیت آن را در همین صفحه خواهید دید.
+            </p>
+            <button
+              type="button"
+              className="patient-button patient-button-primary"
+              onClick={startBooking}
+            >
+              شروع رزرو نوبت آنلاین
+            </button>
+          </div>
+        ) : (
+          <div className="patient-card-list">
+            {patientAppointments.map((app) => (
+              <article
+                key={app.id}
+                className="patient-appointment patient-panel"
+                aria-label={`نوبت ${app.trackingCode}`}
+              >
+                <div className="patient-card-heading">
+                  <h3>{app.serviceName}</h3>
+                  <span className="patient-visit-kind">
+                    {visitLocation(app)}
+                  </span>
+                </div>
+                <dl className="patient-details">
                   <div>
-                    <h3 className="font-bold text-slate-800 text-sm">نوبت‌های ثبت‌شدهٔ من</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      مشاهده جزئیات، وضعیت پرداخت و لینک ورود به جلسه ویزیت آنلاین
+                    <dt>پزشک</dt>
+                    <dd>{app.doctorName}</dd>
+                  </div>
+                  <div>
+                    <dt>زمان نوبت</dt>
+                    <dd>{formatDateTime(app.dateTime)}</dd>
+                  </div>
+                  <div>
+                    <dt>کد رهگیری</dt>
+                    <dd>
+                      <bdi className="patient-tracking">{app.trackingCode}</bdi>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>وضعیت نوبت</dt>
+                    <dd>
+                      <span
+                        className={`patient-status patient-status-${app.status.toLowerCase()}`}
+                      >
+                        {appointmentLabels[app.status]}
+                      </span>
+                    </dd>
+                  </div>
+                  <div className="patient-payment-detail">
+                    <dt>مبلغ پرداختی اولیه</dt>
+                    <dd>
+                      {formatToman(app.initialPatientPaid)}
+                      {app.walletCreditApplied > 0 && (
+                        <span className="patient-helper">
+                          با کسر {formatToman(app.walletCreditApplied)} از
+                          بستانکاری
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+                {app.isSoftLocked && (
+                  <div className="patient-notice patient-notice-debt">
+                    <Lock aria-hidden="true" size={20} />
+                    <p>
+                      قفل نرم فعال است: به دلیل مابه‌التفاوت بدهی{" "}
+                      {Math.abs(app.debtOrCreditBalance).toLocaleString(
+                        "fa-IR",
+                      )}{" "}
+                      تومان پس از اصلاح بیمه، ورود به جلسه مشروط به تسویه یا
+                      بازگشایی اضطراری منشی است.
                     </p>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigate('/patient/booking');
-                      resetBooking();
-                    }}
-                    className="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm self-start sm:self-auto"
+                )}
+                {app.emergencyUnlocked && (
+                  <div className="patient-notice patient-notice-success">
+                    <Unlock aria-hidden="true" size={20} />
+                    <p>
+                      بازگشایی اضطراری توسط منشی انجام شد: «
+                      {app.emergencyUnlockReason}»
+                    </p>
+                  </div>
+                )}
+                {app.clinicalNote && (
+                  <section
+                    className="patient-prescription"
+                    aria-label="نسخه و توصیه‌های پزشک"
                   >
-                    <PlusCircle className="w-4 h-4" />
-                    <span>رزرو نوبت جدید</span>
-                  </button>
-                </div>
-
-                <div className="divide-y divide-slate-100">
-                  {patientAppointments.length === 0 ? (
-                    <div className="p-8 text-center space-y-3">
-                      <div className="text-slate-400 text-xs">
-                        هیچ نوبتی برای این بیمار ثبت نشده است. برای ثبت نوبت جدید از ویزارد زیر ۳ دقیقه استفاده کنید.
+                    <h4>نسخه و توصیه‌های پزشک</h4>
+                    <dl>
+                      <div>
+                        <dt>دارو و نسخه:</dt>
+                        <dd>
+                          {app.clinicalNote.prescriptions ||
+                            "نسخه‌ای ثبت نشده است."}
+                        </dd>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigate('/patient/booking');
-                          resetBooking();
-                        }}
-                        className="bg-teal-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-teal-700 transition"
-                      >
-                        شروع رزرو نوبت آنلاین
-                      </button>
-                    </div>
-                  ) : (
-                    patientAppointments.map((app) => (
-                      <div
-                        key={app.id}
-                        className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 transition"
-                      >
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-sm">{app.serviceName}</span>
-                            <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded font-mono font-bold">
-                              {app.trackingCode}
-                            </span>
-                            {app.branchId === 'ONLINE' ? (
-                              <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 text-[11px] font-medium px-2 py-0.5 rounded-full border border-teal-200">
-                                <Video className="w-3 h-3" /> ویزیت آنلاین
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[11px] font-medium px-2 py-0.5 rounded-full border border-blue-200">
-                                <Building className="w-3 h-3" /> شعبه{' '}
-                                {app.branchId === 'TEHRAN' ? 'تهران' : 'اصفهان'}
-                              </span>
-                            )}
-                            {app.status === 'CONFIRMED' ? (
-                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
-                                قطعی‌شده
-                              </span>
-                            ) : app.status === 'COMPLETED' ? (
-                              <span className="bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
-                                ویزیت تکمیل‌شده
-                              </span>
-                            ) : app.status === 'CANCELLED_BY_PATIENT' ? (
-                              <span className="bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
-                                لغو شده توسط بیمار
-                              </span>
-                            ) : app.status === 'CANCELLED_BY_CLINIC' ? (
-                              <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
-                                لغو شده توسط کلینیک
-                              </span>
-                            ) : (
-                              <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[11px] font-semibold">
-                                {app.status}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="text-xs text-slate-600 flex flex-wrap items-center gap-3">
-                            <span>پزشک: <strong>{app.doctorName}</strong></span>
-                            <span>•</span>
-                            <span>زمان: <strong>{formatDateTime(app.dateTime)}</strong></span>
-                            <span>•</span>
-                            <span>مبلغ پرداختی اولیه: <strong>{app.initialPatientPaid.toLocaleString('fa-IR')} تومان</strong></span>
-                            {app.walletCreditApplied > 0 && (
-                              <span className="text-indigo-700 font-semibold">
-                                (با کسر {app.walletCreditApplied.toLocaleString('fa-IR')} تومان از بستانکاری)
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Debt alert if soft locked */}
-                          {app.isSoftLocked && (
-                            <div className="flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg font-medium">
-                              <Lock className="w-3.5 h-3.5 shrink-0" />
-                              <span>
-                                قفل نرم فعال است: به دلیل مابه‌التفاوت بدهی{' '}
-                                {Math.abs(app.debtOrCreditBalance).toLocaleString('fa-IR')} تومان پس از اصلاح بیمه، ورود به جلسه مشروط به تسویه یا بازگشایی اضطراری منشی است.
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Emergency unlock note */}
-                          {app.emergencyUnlocked && (
-                            <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg font-medium">
-                              <Unlock className="w-3.5 h-3.5 shrink-0" />
-                              <span>بازگشایی اضطراری توسط منشی انجام شد: «{app.emergencyUnlockReason}»</span>
-                            </div>
-                          )}
-
-                          {/* Clinical note preview (Field-level RBAC: Only prescription and follow-up visible to patient) */}
-                          {app.clinicalNote && (
-                            <div className="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-1.5">
-                              <div className="font-semibold text-slate-800 flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                نسخه و توصیه‌های پزشک:
-                              </div>
-                              <div className="text-slate-700">
-                                <strong>دارو و نسخه:</strong> {app.clinicalNote.prescriptions}
-                              </div>
-                              <div className="text-slate-600">
-                                <strong>دستور پیگیری:</strong> {app.clinicalNote.followUp}
-                              </div>
-                              <div className="text-[11px] text-slate-400 italic">
-                                اطلاعات این بخش فقط شامل نسخه و دستور پیگیری شماست.
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-2 shrink-0">
-                          {/* Cancel Appointment Button (FLOW-05 / AC-06) */}
-                          {app.status === 'CONFIRMED' && (
-                            <button
-                              type="button"
-                              onClick={() => setAppointmentToCancel(app)}
-                              className="inline-flex items-center gap-1.5 text-slate-500 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 px-3 py-2 rounded-lg text-xs font-semibold transition"
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                              <span>لغو نوبت</span>
-                            </button>
-                          )}
-
-                          {app.branchId === 'ONLINE' && app.status === 'CONFIRMED' && (
-                            <>
-                              {app.isSoftLocked && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    appointmentRepository.settleDebt(app.id);
-                                  }}
-                                  className="inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition shadow-sm"
-                                >
-                                  <CreditCard className="w-3.5 h-3.5" />
-                                  <span>پرداخت مابه‌التفاوت و رفع قفل</span>
-                                </button>
-                              )}
-                              <button
-                                disabled={app.isSoftLocked}
-                                onClick={() => {
-                                  if (!app.isSoftLocked) {
-                                    setActivePatientConsultationApp(app);
-                                  }
-                                }}
-                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition ${
-                                  app.isSoftLocked
-                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                                    : 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm'
-                                }`}
-                              >
-                                {app.isSoftLocked ? (
-                                  <>
-                                    <Lock className="w-3.5 h-3.5" />
-                                    ورود مسدود (قفل بدهی)
-                                  </>
-                                ) : (
-                                  <>
-                                    <Video className="w-3.5 h-3.5" />
-                                    ورود به اتاق ویزیت
-                                  </>
-                                )}
-                              </button>
-                            </>
-                          )}
-                        </div>
+                      <div>
+                        <dt>دستور پیگیری:</dt>
+                        <dd>
+                          {app.clinicalNote.followUp ||
+                            "دستور پیگیری ثبت نشده است."}
+                        </dd>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Cancel Appointment Modal (FLOW-05 / AC-06) */}
-              {appointmentToCancel && (
-                <CancelAppointmentModal
-                  appointment={appointmentToCancel}
-                  onClose={() => setAppointmentToCancel(null)}
-                  onCancelled={() => setAppointmentToCancel(null)}
-                />
-              )}
-
-  </div>;
+                    </dl>
+                    <p className="patient-helper">
+                      اطلاعات این بخش فقط شامل نسخه و دستور پیگیری شماست.
+                    </p>
+                  </section>
+                )}
+                {app.status === "CONFIRMED" && (
+                  <div className="patient-actions">
+                    {app.branchId === "ONLINE" && (
+                      <>
+                        {app.isSoftLocked && (
+                          <button
+                            type="button"
+                            className="patient-button patient-button-debt"
+                            onClick={() =>
+                              appointmentRepository.settleDebt(app.id)
+                            }
+                          >
+                            <CreditCard aria-hidden="true" size={18} />
+                            پرداخت مابه‌التفاوت و رفع قفل
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={app.isSoftLocked}
+                          className="patient-button patient-button-primary"
+                          onClick={() => {
+                            if (!app.isSoftLocked)
+                              setActivePatientConsultationApp(app);
+                          }}
+                        >
+                          {app.isSoftLocked ? (
+                            <Lock aria-hidden="true" size={18} />
+                          ) : (
+                            <Video aria-hidden="true" size={18} />
+                          )}
+                          {app.isSoftLocked
+                            ? "ورود مسدود (قفل بدهی)"
+                            : "ورود به اتاق ویزیت"}
+                        </button>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      className="patient-button patient-button-cancel"
+                      onClick={() => setAppointmentToCancel(app)}
+                    >
+                      لغو نوبت
+                    </button>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+      {appointmentToCancel && (
+        <CancelAppointmentModal
+          appointment={appointmentToCancel}
+          onClose={() => setAppointmentToCancel(null)}
+          onCancelled={() => setAppointmentToCancel(null)}
+        />
+      )}
+    </div>
+  );
 }
