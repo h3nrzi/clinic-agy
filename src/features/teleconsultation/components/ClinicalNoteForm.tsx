@@ -71,6 +71,7 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
       return;
     }
 
+    setHasUnsavedChanges(false);
     onSave({
       mainComplaint: mainComplaint.trim(),
       findings: findings.trim(),
@@ -100,10 +101,10 @@ export const ClinicalNoteForm: React.FC<ClinicalNoteFormProps> = ({
             type="button"
             onClick={handlePopulateSampleAC05}
             className="inline-flex items-center gap-1 bg-white hover:bg-slate-50 text-indigo-700 border border-indigo-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition"
-            title="پر کردن خودکار با مقادیر سناریوی آزمون AC-05"
+            title="درج نمونهٔ ساختگی برای ارزیابی فرم"
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            <span>درج سناریوی AC-05</span>
+            <span>درج نمونه یادداشت</span>
           </button>
 
           <button

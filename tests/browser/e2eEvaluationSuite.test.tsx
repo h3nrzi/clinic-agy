@@ -135,7 +135,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
 
     // Fill 5-Field Clinical Note
     fireEvent.click(screen.getByRole('button', { name: /شرح‌حال و نسخه/ }));
-    fireEvent.click(screen.getByRole('button', { name: /درج سناریوی AC-05/ }));
+    fireEvent.click(screen.getByRole('button', { name: /درج نمونه یادداشت/ }));
 
     // Submit clinical note
     fireEvent.click(screen.getByRole('button', { name: /ثبت نهایی و خاتمه ویزیت/ }));

@@ -59,7 +59,7 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
     fireEvent.click(noteTabBtn);
 
     // Use Quick Populate for AC-05 values
-    const populateBtn = screen.getByRole('button', { name: /درج سناریوی AC-05/ });
+    const populateBtn = screen.getByRole('button', { name: /درج نمونه یادداشت/ });
     fireEvent.click(populateBtn);
 
     // Verify fields populated
@@ -84,7 +84,7 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
 
     // Verify Success Modal appears
     expect(screen.getByText('پرونده بالینی با موفقیت ثبت شد')).toBeDefined();
-    expect(screen.getByText(/اعمال ماتریس محرمانگی AC-05/)).toBeDefined();
+    expect(screen.getByText(/دسترسی به پرونده/)).toBeDefined();
 
     // Click Return to Appointments button in modal
     const returnBtn = screen.getByRole('button', { name: /بازگشت به کارتابل نوبت‌ها/ });

@@ -1,4 +1,5 @@
 import React from 'react';
+import './teleconsultation.css';
 import {
   ArrowRight,
   ShieldCheck,
@@ -22,7 +23,7 @@ export const PatientConsultationRoom: React.FC<PatientConsultationRoomProps> = (
   return (
     <div
       data-testid="patient-consultation-room"
-      className="space-y-6"
+      className="patient-consultation consultation-workspace space-y-6"
     >
       {/* Top Header */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -93,7 +94,7 @@ export const PatientConsultationRoom: React.FC<PatientConsultationRoomProps> = (
             <div className="p-2.5 rounded-lg bg-teal-50/70 border border-teal-200/60 text-teal-900 text-[11px] leading-relaxed flex items-start gap-1.5">
               <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
               <span>
-                جلسه به‌صورت رمزنگاری‌شده و بدون ضبط ویدیویی برگزار می‌شود. نسخه‌ها و دستورات پزشک در پایان ویزیت در همین صفحه و پروفایل شما ثبت می‌شوند.
+                این محیط نمایشی تماس واقعی برقرار یا ویدیو ضبط نمی‌کند. نسخه‌ها و دستورات پزشک در پایان ویزیت در همین صفحه و پروفایل شما ثبت می‌شوند.
               </span>
             </div>
           </div>
@@ -125,7 +126,7 @@ export const PatientConsultationRoom: React.FC<PatientConsultationRoomProps> = (
                 </div>
 
                 <div className="text-[10px] text-slate-400 italic">
-                  مطابق بند AC-05 ماتریس محرمانگی، فیلدهای تشخیصی برای حفظ حریم بالینی در پورتال بیمار رندر نمی‌شوند.
+                  برای حفظ حریم بالینی، فقط نسخه و دستور پیگیری در اختیار شما قرار می‌گیرد.
                 </div>
               </div>
             ) : (

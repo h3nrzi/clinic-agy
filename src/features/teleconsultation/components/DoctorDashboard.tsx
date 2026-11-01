@@ -1,3 +1,4 @@
+import './teleconsultation.css';
 import { DoctorFinancialSummary } from './DoctorFinancialSummary';
 import React, { useState } from 'react';
 import {
@@ -64,7 +65,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   return (
     <div
       data-testid="doctor-dashboard"
-      className="space-y-6 text-slate-800"
+      className="doctor-workspace space-y-6 text-slate-800"
     >
       {/* Doctor Profile Banner */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -74,7 +75,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-bold text-slate-900 text-lg">{doctorName}</h2>
+              <h1 className="font-bold text-slate-900 text-lg">{activeTab === 'APPOINTMENTS' ? 'کارتابل پزشک' : 'شیفت‌ها و مرخصی'}</h1><p className="doctor-name">{doctorName}</p>
               <span className="bg-teal-50 text-teal-700 border border-teal-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
                 {specialty}
               </span>
@@ -235,7 +236,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
               <div className="text-xs text-slate-500 font-medium">ویزیت‌های تصویری آنلاین</div>
               <div className="text-2xl font-bold text-teal-700 mt-2">{toPersianDigits(onlineCount)}</div>
-              <div className="text-[11px] text-teal-600/80 mt-1">تله‌مدیسین بدون ضبط</div>
+              <div className="text-[11px] text-teal-600/80 mt-1">برگزاری ویزیت از راه دور</div>
             </div>
 
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
@@ -256,6 +257,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                aria-pressed={filterType === 'ALL'}
                 onClick={() => setFilterType('ALL')}
                 className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                   filterType === 'ALL'
@@ -268,6 +270,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
               <button
                 type="button"
+                aria-pressed={filterType === 'ONLINE'}
                 onClick={() => setFilterType('ONLINE')}
                 className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                   filterType === 'ONLINE'
@@ -280,6 +283,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
               <button
                 type="button"
+                aria-pressed={filterType === 'COMPLETED'}
                 onClick={() => setFilterType('COMPLETED')}
                 className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                   filterType === 'COMPLETED'
@@ -297,6 +301,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label="جستجوی نوبت‌های پزشک"
+                aria-label="جستجوی نام بیمار یا کد رهگیری"
                 placeholder="جستجوی نام بیمار یا کد رهگیری..."
                 className="w-full pl-3 pr-8 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:border-teal-500 text-xs"
               />
