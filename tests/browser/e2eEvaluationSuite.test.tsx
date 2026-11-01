@@ -91,15 +91,15 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
 
     // Zero out supplementary insurance to trigger debit and soft-lock (AC-03)
     const zeroSuppBtn = screen.getByRole('button', {
-      name: /ابطال بیمه تکمیلی \(سهم ۰ — سناریوی AC-03\)/,
+      name: /ابطال بیمه تکمیلی \(سهم ۰\)/,
     });
     fireEvent.click(zeroSuppBtn);
-    expect(screen.getByText(/هشدار قفل نرم \(AC-03\)/)).toBeDefined();
+    expect(screen.getByText(/هشدار قفل نرم/)).toBeDefined();
 
     // Save correction
     fireEvent.click(screen.getByRole('button', { name: /ذخیره و اعمال اصلاحیه/ }));
     await waitFor(() => {
-      expect(screen.queryByText(/اصلاح دستی سهم بیمه — پنجره فریز روزانه/)).toBeNull();
+      expect(screen.queryByText(/اصلاح دستی سهم بیمه/)).toBeNull();
     });
 
     // Verify soft-lock in Patient view

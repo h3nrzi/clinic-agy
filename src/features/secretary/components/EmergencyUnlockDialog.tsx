@@ -69,7 +69,7 @@ export const EmergencyUnlockDialog: React.FC<EmergencyUnlockDialogProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="emergency-dialog-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
+      className="reception-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col">
         {/* Header */}
@@ -90,6 +90,7 @@ export const EmergencyUnlockDialog: React.FC<EmergencyUnlockDialogProps> = ({
           <button
             type="button"
             onClick={onClose}
+            aria-label="بستن بازگشایی اضطراری"
             className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
           >
             <X className="w-5 h-5" />
@@ -167,12 +168,12 @@ export const EmergencyUnlockDialog: React.FC<EmergencyUnlockDialogProps> = ({
               placeholder="لطفاً دلیل موجه بازگشایی قفل برای بیمار بدهکار را شرح دهید..."
               className="w-full text-xs rounded-xl border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-slate-800"
             />
-            {error && <p className="text-[11px] text-rose-600 font-medium">{error}</p>}
+            {error && <p role="alert" className="text-[11px] text-rose-600 font-medium">{error}</p>}
           </div>
 
           {/* Success Message */}
           {isSubmitted && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2">
+            <div role="status" className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>بازگشایی اضطراری با موفقیت در سیستم ثبت شد و قفل ویزیت بازگردید.</span>
             </div>
