@@ -90,7 +90,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                 <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 flex items-start gap-2.5">
                   <Lock className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                   <div>
-                    <div className="font-bold">قفل نرم ورود به جلسه فعال است (AC-03)</div>
+                    <div className="font-bold">قفل نرم ورود به جلسه فعال است</div>
                     <div className="mt-0.5 text-[11px] text-rose-700 leading-relaxed">
                       بیمار دارای مانده بدهی {formatToman(Math.abs(app.debtOrCreditBalance))} تومان است. ورود به جلسه ویزیت آنلاین مسدود شده است.
                     </div>
@@ -285,7 +285,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                   <div className="bg-indigo-50/80 border border-indigo-200 rounded-lg p-2.5 text-[11px] text-indigo-900 flex items-start gap-2">
                     <ShieldAlert className="w-4 h-4 shrink-0 text-indigo-600 mt-0.5" />
                     <div>
-                      <strong>قانون محرمانگی داده‌های بالینی (AC-05):</strong> منشی پذیرش صرفاً به کادر «دستور پیگیری» دسترسی دارد. فیلدهای شرح‌حال، یافته‌های معاینه، تشخیص و نسخهٔ بیمار طبق ماتریس دسترسی به هیچ وجه برای منشی رندر نمی‌شوند.
+                      <strong>حریم خصوصی پرونده بالینی:</strong> پذیرش فقط دستور پیگیری را می‌بیند. شرح‌حال، یافته‌های معاینه، تشخیص و نسخهٔ بیمار محرمانه‌اند.
                     </div>
                   </div>
                 </div>

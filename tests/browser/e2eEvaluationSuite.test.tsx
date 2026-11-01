@@ -275,19 +275,22 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
   });
 
   it('validates account changes, demo scenario state injection and factory reset safety (DEC-FE-01)', async () => {
-    renderApp();
+    const { router } = renderApp();
 
     // 1. Verify default role is Patient
-    expect(useAuthStore.getState().currentRole).toBe('PATIENT');
+    expect(screen.getByRole('button', { name: 'حساب کاربری علی رضایی' })).toBeDefined();
+    expect(router.state.location.pathname).toBe('/patient');
 
     // 2. Switch to Secretary Isfahan
     await switchAccount('SECRETARY_ISFAHAN');
-    expect(useAuthStore.getState().currentRole).toBe('SECRETARY_ISFAHAN');
+    expect(screen.getByRole('button', { name: 'حساب کاربری نسیم صادقی' })).toBeDefined();
+    expect(router.state.location.pathname).toBe('/secretary/isfahan');
     expect(screen.getByText(/میز کار پذیرش شعبه شمس‌آبادی اصفهان/)).toBeDefined();
 
     // 3. Switch to Patient and inject Indebted Scenario
     await switchAccount('PATIENT');
-    expect(useAuthStore.getState().currentRole).toBe('PATIENT');
+    expect(screen.getByRole('button', { name: 'حساب کاربری علی رضایی' })).toBeDefined();
+    expect(router.state.location.pathname).toBe('/patient');
 
     fireEvent.click(screen.getByRole('button', { name: 'ابزارهای ارزیابی دمو' }));
     const toolbar = screen.getByRole('dialog', { name: 'ابزارهای ارزیابی دمو' });
@@ -296,14 +299,16 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
 
     // Verify scenario banner and soft-lock
     expect(screen.getByText(/سناریوی بیمار بدهکار فعال شد/)).toBeDefined();
-    expect(useScenarioStore.getState().activeScenario).toBe('INDEBTED_PATIENT');
+    expect(screen.getByRole('button', { name: 'حساب کاربری مهدی سعیدی (سناریوی بدهکار)' })).toBeDefined();
+    expect(router.state.location.pathname).toBe('/patient');
     expect(screen.getByText(/قفل نرم فعال است/)).toBeDefined();
 
     // 4. Toggle scenario off
     fireEvent.click(screen.getByRole('button', { name: 'ابزارهای ارزیابی دمو' }));
     const toggleOffBtn = within(screen.getByRole('dialog', { name: 'ابزارهای ارزیابی دمو' })).getByRole('button', { name: /غیرفعال‌سازی بیمار بدهکار/ });
     fireEvent.click(toggleOffBtn);
-    expect(useScenarioStore.getState().activeScenario).toBe('NORMAL');
+    expect(screen.getByRole('button', { name: 'حساب کاربری علی رضایی' })).toBeDefined();
+    expect(screen.queryByText(/سناریوی بیمار بدهکار فعال شد/)).toBeNull();
 
     // 5. Test Factory Reset
     vi.spyOn(window, 'confirm').mockImplementation(() => true);

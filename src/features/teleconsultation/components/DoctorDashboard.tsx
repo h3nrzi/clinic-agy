@@ -12,11 +12,20 @@ import {
   FilePlus2,
   Briefcase,
 } from 'lucide-react';
-import { Appointment } from '@/shared/types';
+import { Appointment, AppointmentStatus } from '@/shared/types';
 import { formatDateTime, toPersianDigits } from '@/shared/utils/formatters';
 import { scheduleRepository } from '@/mocks/repositories/scheduleRepository';
 import { doctorRepository } from '@/mocks/repositories/doctorRepository';
 import { DoctorLeaveRequestModal } from './DoctorLeaveRequestModal';
+
+const appointmentStatusLabels: Record<AppointmentStatus, string> = {
+  PENDING_PAYMENT: 'در انتظار پرداخت',
+  CONFIRMED: 'آماده پذیرش',
+  IN_CONSULTATION: 'در حال ویزیت',
+  COMPLETED: 'ویزیت تکمیل‌شده',
+  CANCELLED_BY_PATIENT: 'لغوشده توسط بیمار',
+  CANCELLED_BY_CLINIC: 'لغوشده توسط کلینیک',
+};
 
 interface DoctorDashboardProps {
   section?: 'APPOINTMENTS' | 'SHIFTS_AND_LEAVES';
@@ -129,8 +138,9 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 <p className="doctor-empty-state">شیفتی برای شما ثبت نشده است. برنامه پس از ثبت مسئول پذیرش یا مدیر اینجا نمایش داده می‌شود.</p>
               )}
               {doctorShifts.map((shift) => (
-                <div
+                <article
                   key={shift.id}
+                  aria-label={`شیفت ${shift.dayName}`}
                   className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition text-xs space-y-2"
                 >
                   <div className="flex items-center justify-between">
@@ -157,7 +167,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                       <strong>{toPersianDigits(shift.endTime)}</strong>
                     </span>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </div>
@@ -191,7 +201,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             ) : (
               <div className="divide-y divide-slate-100">
                 {doctorLeaves.map((leave) => (
-                  <div key={leave.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <article key={leave.id} aria-label={`درخواست مرخصی از ${leave.startDate} تا ${leave.endDate}`} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-900">
@@ -220,7 +230,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                         </p>
                       )}
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             )}
@@ -356,7 +366,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                           </span>
                         ) : (
                           <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-medium px-2 py-0.5 rounded-full">
-                            {app.status === 'CONFIRMED' ? 'آماده پذیرش' : app.status}
+                            {appointmentStatusLabels[app.status]}
                           </span>
                         )}
                       </div>
