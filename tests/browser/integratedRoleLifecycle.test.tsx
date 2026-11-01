@@ -42,7 +42,8 @@ it('carries a newly booked visit from guest login through insurance lock, author
 
   await switchAccount('SECRETARY_TEHRAN');
   let row = screen.getByRole('row', { name: new RegExp(tracking) });
-  fireEvent.click(within(row).getByTitle('اصلاح سهم بیمه'));
+  fireEvent.click(within(row).getByRole('button', { name: `عملیات نوبت ${tracking}` }));
+  fireEvent.click(screen.getByTitle('اصلاح سهم بیمه'));
   fireEvent.click(screen.getByRole('button', { name: /ابطال بیمه تکمیلی/ }));
   expect(screen.getByText(/۱۳۷,۲۰۰ تومان/)).toBeDefined();
   fireEvent.click(screen.getByRole('button', { name: /ذخیره و اعمال اصلاحیه/ }));
@@ -55,7 +56,8 @@ it('carries a newly booked visit from guest login through insurance lock, author
 
   await switchAccount('SECRETARY_TEHRAN');
   row = screen.getByRole('row', { name: new RegExp(tracking) });
-  fireEvent.click(within(row).getByRole('button', { name: /بازگشایی اضطراری/ }));
+  fireEvent.click(within(row).getByRole('button', { name: `عملیات نوبت ${tracking}` }));
+  fireEvent.click(screen.getByRole('button', { name: /بازگشایی اضطراری/ }));
   fireEvent.click(screen.getByRole('button', { name: /تایید و بازگشایی اضطراری/ }));
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   await switchAccount('PATIENT');
@@ -65,6 +67,9 @@ it('carries a newly booked visit from guest login through insurance lock, author
   expect(router.state.location.pathname).toMatch(/^\/patient\/consultations\//);
   // The appointment ID comes from the actual authorized room URL, not a store lookup.
   const visitId = router.state.location.pathname.split('/').at(-1)!;
+  // Advance the clock to the booked visit before the doctor starts it.
+  const bookedVisit = memoryDb.getAll('appointments').find(visit => visit.id === visitId)!;
+  vi.spyOn(Date, 'now').mockReturnValue(new Date(bookedVisit.dateTime).getTime());
   await switchAccount('DOCTOR');
   fireEvent.change(screen.getByRole('textbox', { name: 'جستجوی نوبت‌های پزشک' }), { target: { value: tracking } });
   expect(screen.getByText(tracking)).toBeDefined();
@@ -75,9 +80,12 @@ it('carries a newly booked visit from guest login through insurance lock, author
   fireEvent.click(screen.getByRole('button', { name: 'بازگشت به کارتابل نوبت‌ها' }));
   await switchAccount('PATIENT');
   card = screen.getByRole('article', { name: `نوبت ${tracking}` });
-  expect(within(card).getByText('کپسول مسکن روزی ۱ عدد، پرهیز از بی‌خوابی')).toBeDefined();
-  expect(within(card).getByText('مراجعه مجدد ۲ هفته دیگر')).toBeDefined();
+  fireEvent.click(within(card).getByRole('button', { name: 'مشاهده نسخه و توصیه‌ها' }));
+  const prescription = screen.getByRole('dialog', { name: 'نسخه و توصیه‌های پزشک' });
+  expect(within(prescription).getByText('کپسول مسکن روزی ۱ عدد، پرهیز از بی‌خوابی')).toBeDefined();
+  expect(within(prescription).getByText('مراجعه مجدد ۲ هفته دیگر')).toBeDefined();
   for (const privateField of ['سردرد مزمن و احساس خستگی', 'فشار خون 13 روی 8', 'میگرن ناشی از استرس']) expect(screen.queryByText(privateField)).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'بستن نسخه' }));
   await switchAccount('SECRETARY_TEHRAN');
   fireEvent.click(screen.getByRole('button', { name: tracking }));
   expect(screen.getByText('مراجعه مجدد ۲ هفته دیگر')).toBeDefined();
@@ -148,7 +156,7 @@ it('carries saved tax, a new shift and a doctor leave decision across financial,
   const fridayShift = screen.getByRole('article', { name: 'شیفت جمعه' });
   expect(within(fridayShift).getByText('۰۹:۰۰')).toBeDefined();
   expect(within(fridayShift).getByText('۱۳:۰۰')).toBeDefined();
-  fireEvent.click(screen.getByRole('button', { name: 'ثبت درخواست مرخصی / تغییر شیفت' }));
+  fireEvent.click(screen.getByRole('button', { name: '+ درخواست جدید' }));
   fireEvent.change(screen.getByLabelText('از تاریخ (شروع):'), { target: { value: '2027-01-10' } });
   fireEvent.change(screen.getByLabelText('تا تاریخ (پایان):'), { target: { value: '2027-01-11' } });
   fireEvent.change(screen.getByLabelText('علت مرخصی / توضیحات:'), { target: { value: 'همایش نمونه یکپارچه' } });
@@ -171,7 +179,7 @@ it('closes the doctor leave dialog when browser Back changes the workspace desti
   useAuthStore.getState().switchRole('DOCTOR');
   const { router } = renderApp('/doctor');
   fireEvent.click(screen.getByRole('link', { name: 'شیفت‌ها و مرخصی' }));
-  fireEvent.click(screen.getByRole('button', { name: 'ثبت درخواست مرخصی / تغییر شیفت' }));
+  fireEvent.click(screen.getByRole('button', { name: '+ درخواست جدید' }));
   expect(screen.getByRole('dialog', { name: 'ثبت درخواست مرخصی / تغییر شیفت' })).toBeDefined();
   await act(() => router.navigate(-1));
   expect(router.state.location.pathname).toBe('/doctor');

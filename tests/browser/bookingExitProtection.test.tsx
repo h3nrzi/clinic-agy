@@ -18,6 +18,7 @@ function selectSlot() {
 }
 it("keeps changed booking and URL on stay, then discards after confirmed route exit", async () => {
   const { router } = renderApp("/patient/booking");
+  expect(screen.queryByRole("button", { name: "انصراف از رزرو" })).toBeNull();
   selectSlot();
   const slot = screen
     .getByRole("button", { pressed: true, name: /ساعت/ })
@@ -33,7 +34,7 @@ it("keeps changed booking and URL on stay, then discards after confirmed route e
       .getByRole("button", { pressed: true, name: /ساعت/ })
       .getAttribute("aria-label"),
   ).toBe(slot);
-  fireEvent.click(screen.getByRole("button", { name: "انصراف از رزرو" }));
+  fireEvent.click(screen.getByRole("link", { name: "نوبت‌ها و پرونده من" }));
   fireEvent.click(
     await screen.findByRole("button", { name: "خروج و کنارگذاشتن تغییرات" }),
   );
@@ -187,7 +188,7 @@ it("does not carry a delayed file read into a new booking after abandoning the o
         ],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "انصراف از رزرو" }));
+    fireEvent.click(screen.getByRole("link", { name: "نوبت‌ها و پرونده من" }));
     fireEvent.click(
       await screen.findByRole("button", { name: "خروج و کنارگذاشتن تغییرات" }),
     );
@@ -252,14 +253,14 @@ it("protects a valid file still being read even when every other value is presel
         files: [new File(["x"], "pending-private.png", { type: "image/png" })],
       },
     });
-    fireEvent.click(screen.getByRole("button", { name: "انصراف از رزرو" }));
+    fireEvent.click(screen.getByRole("link", { name: "نوبت‌ها و پرونده من" }));
     fireEvent.click(
       await screen.findByRole("button", { name: "ماندن و ادامه" }),
     );
     const pending = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(pending);
     expect(pending.defaultPrevented).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "انصراف از رزرو" }));
+    fireEvent.click(screen.getByRole("link", { name: "نوبت‌ها و پرونده من" }));
     fireEvent.click(
       await screen.findByRole("button", { name: "خروج و کنارگذاشتن تغییرات" }),
     );

@@ -17,10 +17,7 @@ export function PublicLayout() {
         </span>
       </header>
       <Outlet />
-      <footer className="public-footer">
-        کلینیک سلامت آژی • پرداخت و پیامک شبیه‌سازی‌شده • خدمات درمانی واقعی
-        ارائه نمی‌شود.
-      </footer>
+
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { renderApp, switchAccount } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
@@ -99,6 +99,8 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
     // 6. RBAC Check for PATIENT: Switch to Patient role
     await switchAccount('PATIENT');
 
+    fireEvent.click(within(screen.getByRole('article', { name: 'نوبت AGY-10142' })).getByRole('button', { name: 'مشاهده نسخه و توصیه‌ها' }));
+
     // Verify Patient Appointment Card displays clinical note under Field-Level RBAC (AC-05):
     // Prescriptions and Follow-up MUST be displayed
     expect(screen.getByText(/کپسول مسکن روزی ۱ عدد، پرهیز از بی‌خوابی/)).toBeDefined();
@@ -108,6 +110,8 @@ describe('WP-04: Teleconsultation, 5-Field Clinical Note & Field-Level RBAC (FLO
     expect(screen.queryByText('سردرد مزمن و احساس خستگی')).toBeNull();
     expect(screen.queryByText('فشار خون 13 روی 8')).toBeNull();
     expect(screen.queryByText('میگرن ناشی از استرس')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'بستن نسخه' }));
 
     // 7. RBAC Check for SECRETARY: Switch to Secretary Tehran role
     await switchAccount('SECRETARY_TEHRAN');

@@ -10,6 +10,7 @@ import {
   formatDateTime,
   toPersianDigits,
 } from "@/shared/utils/formatters";
+import { PrescriptionModal } from "./PrescriptionModal";
 import { CancelAppointmentModal } from "./CancelAppointmentModal";
 import type { Appointment } from "@/shared/types";
 import {
@@ -19,6 +20,7 @@ import {
   Lock,
   Unlock,
   PlusCircle,
+  FileText,
 } from "lucide-react";
 import "./patient-portal.css";
 
@@ -49,6 +51,7 @@ function PatientPortalContent() {
   const resetBooking = useBookingStore((s) => s.resetBooking);
   const [appointmentToCancel, setAppointmentToCancel] =
     useState<Appointment | null>(null);
+  const [prescriptionId, setPrescriptionId] = useState<string | null>(null);
   const [, refresh] = useState(0);
   useEffect(
     () =>
@@ -60,6 +63,7 @@ function PatientPortalContent() {
   const patientAppointments = appointmentRepository
     .getAll()
     .filter((a) => a.patientId === currentUser.id);
+  const prescriptionAppointment = patientAppointments.find(app => app.id === prescriptionId && app.clinicalNote);
   const nextAppointment = [...patientAppointments]
     .filter(
       (a) =>
@@ -254,35 +258,10 @@ function PatientPortalContent() {
                     </p>
                   </div>
                 )}
-                {app.clinicalNote && (
-                  <section
-                    className="patient-prescription"
-                    aria-label="نسخه و توصیه‌های پزشک"
-                  >
-                    <h4>نسخه و توصیه‌های پزشک</h4>
-                    <dl>
-                      <div>
-                        <dt>دارو و نسخه:</dt>
-                        <dd>
-                          {app.clinicalNote.prescriptions ||
-                            "نسخه‌ای ثبت نشده است."}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>دستور پیگیری:</dt>
-                        <dd>
-                          {app.clinicalNote.followUp ||
-                            "دستور پیگیری ثبت نشده است."}
-                        </dd>
-                      </div>
-                    </dl>
-                    <p className="patient-helper">
-                      اطلاعات این بخش فقط شامل نسخه و دستور پیگیری شماست.
-                    </p>
-                  </section>
-                )}
-                {app.status === "CONFIRMED" && (
+                {(app.clinicalNote || app.status === "CONFIRMED") && (
                   <div className="patient-actions">
+                    {app.clinicalNote && <button type="button" className="patient-button" aria-haspopup="dialog" onClick={() => setPrescriptionId(app.id)}><FileText size={18} aria-hidden="true" />مشاهده نسخه و توصیه‌ها</button>}
+                    {app.status === "CONFIRMED" && <>
                     {app.branchId === "ONLINE" && (
                       <>
                         {app.isSoftLocked && (
@@ -324,6 +303,7 @@ function PatientPortalContent() {
                     >
                       لغو نوبت
                     </button>
+                    </>}
                   </div>
                 )}
               </article>
@@ -331,6 +311,7 @@ function PatientPortalContent() {
           </div>
         )}
       </section>
+      {prescriptionAppointment?.clinicalNote && <PrescriptionModal appointment={prescriptionAppointment} note={prescriptionAppointment.clinicalNote} onClose={() => setPrescriptionId(null)} />}
       {appointmentToCancel && (
         <CancelAppointmentModal
           appointment={appointmentToCancel}

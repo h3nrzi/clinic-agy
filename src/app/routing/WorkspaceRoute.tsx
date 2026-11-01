@@ -36,9 +36,7 @@ export function WorkspaceRoute({ role }: { role: Role }) {
           <Outlet />
         </div>
         <DemoTools />
-        <footer className="public-footer workspace-footer">
-          کلینیک سلامت آژی • محیط نمایشی با داده‌های ساختگی
-        </footer>
+
       </div>
     </UnsavedChangesProvider>
   );

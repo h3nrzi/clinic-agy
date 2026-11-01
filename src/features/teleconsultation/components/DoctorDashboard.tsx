@@ -9,7 +9,6 @@ import {
   Building,
   Search,
   Clock,
-  FilePlus2,
   Briefcase,
 } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '@/shared/types';
@@ -94,30 +93,14 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             </p>
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          <button
-            type="button"
-            onClick={() => setShowLeaveModal(true)}
-            className="inline-flex items-center gap-1.5 bg-teal-700 hover:bg-teal-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm"
-          >
-            <FilePlus2 className="w-4 h-4" />
-            <span>ثبت درخواست مرخصی / تغییر شیفت</span>
-          </button>
-
-          <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            فضای ویزیت آنلاین
-          </span>
-        </div>
       </div>
 
       {currentDoc && <DoctorFinancialSummary doctor={currentDoc} appointments={appointments} />}
       {activeTab === 'SHIFTS_AND_LEAVES' ? (
-        <div className="doctor-schedule-grid space-y-6">
+        <div className="doctor-schedule-grid">
           {/* Shifts Section */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="doctor-schedule-header border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <Clock className="w-4 h-4 text-teal-600" />
@@ -133,7 +116,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="doctor-shift-list">
               {doctorShifts.length === 0 && (
                 <p className="doctor-empty-state">شیفتی برای شما ثبت نشده است. برنامه پس از ثبت مسئول پذیرش یا مدیر اینجا نمایش داده می‌شود.</p>
               )}
@@ -143,7 +126,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   aria-label={`شیفت ${shift.dayName}`}
                   className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition text-xs space-y-2"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="doctor-shift-heading">
                     <span className="font-bold text-slate-900 text-sm">{shift.dayName}</span>
                     <span
                       className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
@@ -160,11 +143,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     </span>
                   </div>
 
-                  <div className="text-slate-600 flex items-center gap-1.5">
+                  <div className="doctor-shift-time text-slate-600">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>
-                      ساعت کاری: <strong>{toPersianDigits(shift.startTime)}</strong> الی{' '}
-                      <strong>{toPersianDigits(shift.endTime)}</strong>
+                    <span>ساعت کاری:</span>
+                    <span className="doctor-time-range">
+                      <strong>{toPersianDigits(shift.startTime)}</strong> تا <strong>{toPersianDigits(shift.endTime)}</strong>
                     </span>
                   </div>
                 </article>
@@ -174,7 +157,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
           {/* Leaves Section */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="doctor-schedule-header border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-indigo-600" />
@@ -201,11 +184,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
             ) : (
               <div className="divide-y divide-slate-100">
                 {doctorLeaves.map((leave) => (
-                  <article key={leave.id} aria-label={`درخواست مرخصی از ${leave.startDate} تا ${leave.endDate}`} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                  <article key={leave.id} aria-label={`درخواست مرخصی از ${leave.startDate} تا ${leave.endDate}`} className="doctor-leave-item py-4 text-sm">
+                    <div className="space-y-2">
+                      <div className="doctor-leave-heading">
                         <span className="font-bold text-slate-900">
-                          از {leave.startDate} تا {leave.endDate}
+                          از <bdi dir="ltr">{toPersianDigits(leave.startDate)}</bdi> تا <bdi dir="ltr">{toPersianDigits(leave.endDate)}</bdi>
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${
@@ -333,16 +316,16 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </span>
             </div>
 
-            <div className="divide-y divide-slate-100">
+            <div className="doctor-appointment-grid">
               {filteredAppointments.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 text-xs">
+                <div className="doctor-queue-empty p-8 text-center text-slate-400 text-xs">
                   نوبتی با این مشخصات یافت نشد.
                 </div>
               ) : (
                 filteredAppointments.map((app) => (
                   <div
                     key={app.id}
-                    className="doctor-queue-row p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition"
+                    className="doctor-queue-row"
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -365,7 +348,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                             <CheckCircle2 className="w-3 h-3" /> ویزیت تکمیل‌شده
                           </span>
                         ) : (
-                          <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-medium px-2 py-0.5 rounded-full">
+                          <span className={`border text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                            app.status === 'CANCELLED_BY_PATIENT' || app.status === 'CANCELLED_BY_CLINIC'
+                              ? 'bg-red-50 text-red-700 border-red-200'
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
                             {appointmentStatusLabels[app.status]}
                           </span>
                         )}
@@ -395,7 +382,9 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                     {/* Action button */}
                     <div className="shrink-0 flex items-center gap-2">
                       {app.branchId === 'ONLINE' ? (
-                        <button
+                        (app.status === 'COMPLETED' ||
+                          ((app.status === 'CONFIRMED' || app.status === 'IN_CONSULTATION') &&
+                            new Date(app.dateTime).getTime() <= Date.now())) && <button
                           type="button"
                           onClick={() => onStartConsultation(app)}
                           className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs ${

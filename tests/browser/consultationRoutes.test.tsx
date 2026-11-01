@@ -187,7 +187,7 @@ describe('Role and resource room matrix', () => {
 it('shows connected leave labels and returns keyboard focus after Escape', async () => {
   memoryDb.resetToFactoryDefaults(); useAuthStore.getState().switchRole('DOCTOR');
   renderApp('/doctor/shifts');
-  const openers = screen.getAllByRole('button',{name:/ثبت درخواست مرخصی/});
+  const openers = screen.getAllByRole('button',{name:'+ درخواست جدید'});
   openers[0].focus();
   fireEvent.click(openers[0]);
   expect(screen.getByRole('dialog',{name:'ثبت درخواست مرخصی / تغییر شیفت'})).toBeDefined();

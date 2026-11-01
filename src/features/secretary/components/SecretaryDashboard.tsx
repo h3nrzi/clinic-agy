@@ -37,9 +37,11 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
   }, []);
 
   // Filter state
-  const isTehranSecretary = currentRole === 'SECRETARY_TEHRAN';
-  const defaultBranch = isTehranSecretary ? 'TEHRAN' : 'ISFAHAN';
-  const [selectedBranch, setSelectedBranch] = useState<'ALL' | 'TEHRAN' | 'ISFAHAN' | 'ONLINE'>(
+  const secretaryBranch = currentUser.branchId === 'ISFAHAN' ? 'ISFAHAN' : 'TEHRAN';
+  const isTehranSecretary = secretaryBranch === 'TEHRAN';
+  const branchLabel = isTehranSecretary ? 'تهران' : 'اصفهان';
+  const defaultBranch = 'ALL';
+  const [selectedBranch, setSelectedBranch] = useState<'ALL' | 'BRANCH' | 'ONLINE'>(
     defaultBranch
   );
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ONLINE' | 'SOFT_LOCKED' | 'DEBIT' | 'WITH_DOCS'>('ALL');
@@ -54,8 +56,8 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
   const [unlockAppId, setUnlockAppId] = useState<string | null>(null);
   const [selectedDocForZoom, setSelectedDocForZoom] = useState<PatientDocument | null>(null);
 
-  // Load all appointments from repository
-  const allAppointments = appointmentRepository.getAll();
+  // Every table, total and selected record stays within this secretary's scope.
+  const allAppointments = appointmentRepository.getAll().filter(app => app.branchId === secretaryBranch || app.branchId === 'ONLINE');
 
   const selectedAppForDrawer = drawerAppId ? allAppointments.find((a) => a.id === drawerAppId) || null : null;
   const selectedAppForInsurance = insuranceAppId ? allAppointments.find((a) => a.id === insuranceAppId) || null : null;
@@ -65,11 +67,8 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
   const filteredAppointments = useMemo(() => {
     return allAppointments.filter((app) => {
       // Branch filter
-      if (selectedBranch !== 'ALL') {
-        if (selectedBranch === 'ONLINE' && app.branchId !== 'ONLINE') return false;
-        if (selectedBranch === 'TEHRAN' && app.branchId !== 'TEHRAN' && app.branchId !== 'ONLINE') return false;
-        if (selectedBranch === 'ISFAHAN' && app.branchId !== 'ISFAHAN' && app.branchId !== 'ONLINE') return false;
-      }
+      if (selectedBranch === 'BRANCH' && app.branchId !== secretaryBranch) return false;
+      if (selectedBranch === 'ONLINE' && app.branchId !== 'ONLINE') return false;
 
       // Status tab filter
       if (statusFilter === 'ONLINE' && app.branchId !== 'ONLINE') return false;
@@ -91,16 +90,10 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
 
       return true;
     });
-  }, [allAppointments, selectedBranch, statusFilter, searchQuery]);
+  }, [allAppointments, selectedBranch, secretaryBranch, statusFilter, searchQuery]);
 
   // Aggregate KPI metrics
-  const relevantAppointments = allAppointments.filter((a) =>
-    selectedBranch === 'ALL'
-      ? true
-      : selectedBranch === 'ONLINE'
-      ? a.branchId === 'ONLINE'
-      : a.branchId === selectedBranch || a.branchId === 'ONLINE'
-  );
+  const relevantAppointments = allAppointments.filter(a => selectedBranch === 'ALL' || a.branchId === (selectedBranch === 'BRANCH' ? secretaryBranch : 'ONLINE'));
 
   const totalCount = relevantAppointments.length;
   const onlineCount = relevantAppointments.filter((a) => a.branchId === 'ONLINE').length;
@@ -113,7 +106,7 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
     <div className="reception-workspace space-y-6">
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="reception-heading flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-bold">
             <Building className="w-6 h-6" />
           </div>
@@ -134,7 +127,7 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
 
         {activeSection === 'APPOINTMENTS' && (
           <div className="reception-branch-filter" role="group" aria-label="فیلتر شعبه">
-            {([[defaultBranch, isTehranSecretary ? 'شعبه تهران + آنلاین' : 'شعبه اصفهان + آنلاین'], ['ONLINE', 'فقط آنلاین'], ['ALL', 'همه شعب']] as const).map(([value, label]) => (
+            {([['ALL', `شعبه ${branchLabel} + آنلاین`], ['BRANCH', `فقط ${branchLabel}`], ['ONLINE', 'فقط آنلاین']] as const).map(([value, label]) => (
               <button key={value} type="button" aria-pressed={selectedBranch === value} onClick={() => setSelectedBranch(value)}>{label}</button>
             ))}
           </div>
@@ -143,7 +136,7 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
 
       {activeSection === 'DOCTOR_LEAVES' ? (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4 text-xs">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="reception-leaves-heading flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <CalendarDays aria-hidden="true" className="w-4 h-4 text-teal-600" />
@@ -153,7 +146,7 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
                 بررسی تداخل نوبت‌ها، تأیید یا رد درخواست و لغو نوبت‌های متأثر با بازگشت کامل وجه
               </p>
             </div>
-            <span className="text-slate-500">
+            <span className="reception-leaves-count text-slate-500">
               کل درخواست‌ها: {toPersianDigits(allLeaves.length)}
             </span>
           </div>
@@ -172,8 +165,8 @@ export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_L
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-slate-900 text-sm">{leave.doctorName}</span>
-                          <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-mono text-[11px]">
-                            از {leave.startDate} تا {leave.endDate}
+                          <span className="reception-leave-dates bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs">
+                            <span>از <bdi>{toPersianDigits(leave.startDate)}</bdi></span><span>تا <bdi>{toPersianDigits(leave.endDate)}</bdi></span>
                           </span>
                           <span
                             className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${

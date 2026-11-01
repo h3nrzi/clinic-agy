@@ -44,7 +44,7 @@ export function BookingPage() {
     );
   return (
     <div className="booking-flow">
-      <BookingWizard onCancel={() => navigate("/patient")} />
+      <BookingWizard />
     </div>
   );
 }

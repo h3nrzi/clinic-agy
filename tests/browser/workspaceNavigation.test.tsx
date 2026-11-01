@@ -104,24 +104,20 @@ describe('workspace route access matrix', () => {
 
 describe('workspace overlays and demo invariants', () => {
   beforeEach(() => { memoryDb.resetToFactoryDefaults(); sessionStorage.clear(); useAuthStore.getState().switchRole('PATIENT'); vi.restoreAllMocks(); });
-  it('traps mobile menu focus, closes with Escape and restores the trigger', async () => {
-    const user=userEvent.setup();
-    renderApp();
-    const trigger=screen.getByRole('button',{name:'باز کردن منوی فضای کار'});
-    await user.click(trigger);
-    const dialog=screen.getByRole('dialog',{name:'منوی فضای کار'});
-    expect(document.activeElement).toBe(within(dialog).getByRole('button',{name:'بستن ناوبری'}));
-    expect(screen.queryByRole('button',{name:'خروج از حساب'})).toBeNull();
-    const last=within(dialog).getByRole('link',{name:'رزرو نوبت جدید'});
-    last.focus(); await user.tab();
-    expect(document.activeElement).toBe(within(dialog).getByRole('button',{name:'بستن ناوبری'}));
-    await user.keyboard('{Escape}');
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(document.activeElement).toBe(trigger);
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    await user.click(trigger);
-    await user.tab(); await user.tab(); await user.keyboard('{Enter}');
-    expect(await screen.findByText('رزرو نوبت آنلاین و محاسبه هوشمند بیمه')).toBeDefined();
+  it.each(roles)('keeps %s workspace destinations directly accessible without opening a drawer', async role => {
+    const user = userEvent.setup();
+    useAuthStore.getState().switchRole(role);
+    const own = destinations.filter(destination => destination.role === role);
+    const { router } = renderApp(own[0].path);
+    expect(screen.queryByRole('button', { name: 'باز کردن منوی فضای کار' })).toBeNull();
+    const navigation = screen.getByRole('complementary', { name: 'ناوبری فضای کار' });
+    expect(within(navigation).getAllByRole('link')).toHaveLength(own.length);
+    const next = within(navigation).getByRole('link', { name: own[1].label });
+    next.focus();
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(router.state.location.pathname).toBe(own[1].path));
+    expect(next.getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('button', { name: 'خروج از حساب' })).toBeDefined();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
   it('drops the previous patient room when the scenario changes account identity', async () => {

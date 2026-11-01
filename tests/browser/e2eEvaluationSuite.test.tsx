@@ -86,6 +86,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     expect(screen.getByText(/میز کار پذیرش شعبه مرکزی تهران/)).toBeDefined();
 
     // Open insurance edit modal for AGY-10142
+    fireEvent.click(screen.getByRole('button', { name: 'عملیات نوبت AGY-10142' }));
     const editBtns = screen.getAllByTitle('اصلاح سهم بیمه');
     fireEvent.click(editBtns[0]);
 
@@ -110,6 +111,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
 
     // Switch back to Secretary and issue Emergency Unlock (AC-04)
     await switchAccount('SECRETARY_TEHRAN');
+    fireEvent.click(screen.getByRole('button', { name: 'عملیات نوبت AGY-10142' }));
     const emergencyUnlockBtns = screen.getAllByRole('button', { name: /بازگشایی اضطراری/ });
     fireEvent.click(emergencyUnlockBtns[0]);
 
@@ -144,11 +146,14 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
 
     // Check RBAC for Patient (AC-05): Only fields 4 & 5 rendered
     await switchAccount('PATIENT');
+    fireEvent.click(within(screen.getByRole('article', { name: 'نوبت AGY-10142' })).getByRole('button', { name: 'مشاهده نسخه و توصیه‌ها' }));
     expect(screen.getByText('کپسول مسکن روزی ۱ عدد، پرهیز از بی‌خوابی')).toBeDefined();
     expect(screen.getByText('مراجعه مجدد ۲ هفته دیگر')).toBeDefined();
     expect(screen.queryByText('سردرد مزمن و احساس خستگی')).toBeNull();
     expect(screen.queryByText('فشار خون 13 روی 8')).toBeNull();
     expect(screen.queryByText('میگرن ناشی از استرس')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'بستن نسخه' }));
 
     // Check RBAC for Secretary (AC-05): Click tracking code to open Secretary Drawer
     await switchAccount('SECRETARY_TEHRAN');

@@ -1,14 +1,32 @@
 import { useGuardedAction } from "@/shared/navigation/UnsavedChanges";
 import { useNavigate } from "react-router";
 import { useBookingStore } from "@/shared/stores/useBookingStore";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/shared/stores/useAuthStore";
 import { useScenarioStore } from "@/shared/stores/useScenarioStore";
 import { memoryDb } from "@/mocks/db/memoryDb";
-import { HeartPulse, User, X, Bell, ChevronDown } from "lucide-react";
+import { HeartPulse, User, X, Bell, ChevronDown, LogOut } from "lucide-react";
 import { toPersianDigits } from "@/shared/utils/formatters";
 
 export const Navbar = () => {
+  const headerRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    const shell = header?.closest<HTMLElement>(".workspace-shell");
+    if (!header || !shell) return;
+    const updateHeight = () => {
+      shell.style.setProperty("--workspace-header-height", `${header.getBoundingClientRect().height}px`);
+    };
+    updateHeight();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateHeight);
+    observer?.observe(header);
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateHeight);
+      shell.style.removeProperty("--workspace-header-height");
+    };
+  }, []);
   const { currentUser, currentRole } = useAuthStore();
   const { statusNotice, dismissNotice } = useScenarioStore();
   const navigate = useNavigate();
@@ -39,7 +57,7 @@ export const Navbar = () => {
   const locked = scoped.filter((a) => a.isSoftLocked);
   return (
     <>
-      <header className="app-header bg-white border-b border-slate-200 relative z-40">
+      <header ref={headerRef} className="app-header bg-white border-b border-slate-200 sticky top-0 z-40">
         {statusNotice && (
           <div
             role="status"
@@ -81,7 +99,9 @@ export const Navbar = () => {
               )}
             </button>
             <button
-              className="topbar-icon"
+              className="topbar-icon logout-trigger"
+              aria-label="خروج از حساب"
+              title="خروج از حساب"
               onClick={() =>
                 runGuardedAction(() => {
                   navigate("/", { flushSync: true });
@@ -90,7 +110,8 @@ export const Navbar = () => {
                 })
               }
             >
-              خروج از حساب
+              <LogOut className="logout-icon" size={20} aria-hidden="true" />
+              <span>خروج از حساب</span>
             </button>
             <button
               className="account-trigger"

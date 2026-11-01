@@ -39,18 +39,34 @@
 .doctor-metrics>div{padding:.875rem;border-radius:12px;box-shadow:none}
 .doctor-metrics>div>div:nth-child(2){margin-top:.5rem;font-variant-numeric:tabular-nums}
 .doctor-filters{padding:.75rem!important;gap:.75rem}
-.doctor-queue-row{padding:1rem!important;gap:1rem}
+.doctor-appointment-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;padding:1rem;background:var(--canvas)}
+.doctor-queue-empty{grid-column:1/-1}
+.doctor-queue-row{display:flex;flex-direction:column;min-width:0;padding:1rem;gap:1rem;background:#fff;border:1px solid var(--line);border-radius:12px}
+.doctor-queue-row>div:first-child{flex:1;line-height:1.8}
+.doctor-queue-row>div:last-child:empty{display:none}
+.doctor-queue-row>div:last-child button{justify-content:center}
+@media(min-width:1024px){.doctor-appointment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .doctor-queue-row>div:first-child{min-width:0}
 .doctor-queue-row>div:last-child{align-self:stretch}
 .doctor-queue-row>div:last-child button{width:100%}
-.doctor-schedule-grid>div{border-radius:12px;padding:1rem}
+.doctor-schedule-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:1.5rem}
+.doctor-schedule-grid>div{min-width:0;border-radius:12px;padding:1rem}
+.doctor-schedule-header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:1rem}
+.doctor-schedule-header>div{flex:1 1 16rem;min-width:0}
+.doctor-schedule-header h3{line-height:1.8}
+.doctor-schedule-header p{line-height:1.8}
+.doctor-schedule-header svg{flex-shrink:0}
+.doctor-schedule-header>button,.doctor-schedule-header>span{flex-shrink:0}
+.doctor-shift-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem}
+.doctor-shift-heading,.doctor-leave-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem}
+.doctor-shift-heading>span:last-child,.doctor-leave-heading>span:last-child{flex-shrink:0}
+.doctor-shift-time{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;line-height:1.8}
+.doctor-shift-time svg{flex-shrink:0}
+.doctor-time-range{white-space:nowrap;font-variant-numeric:tabular-nums}
+.doctor-leave-item{line-height:1.9}
+.doctor-leave-heading bdi{display:inline-block;font-variant-numeric:tabular-nums}
 @media(min-width:768px){
  .doctor-workspace .doctor-finance{grid-template-columns:minmax(180px,1fr) minmax(0,2fr);align-items:center}
- .doctor-queue-row>div:last-child{align-self:center}
-}
-@media(min-width:1200px){
- .doctor-schedule-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:1rem;align-items:start}
- .doctor-schedule-grid>div{margin:0!important}
 }
 @media(max-width:479px){
  .doctor-workspace .doctor-finance dl{grid-template-columns:1fr}

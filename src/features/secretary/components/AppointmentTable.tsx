@@ -1,11 +1,10 @@
 import React from 'react';
+import { AppointmentActions } from './AppointmentActions';
 import { Appointment } from '@/shared/types';
 import { formatToman, formatDateTime, toPersianDigits } from '@/shared/utils/formatters';
 import {
   Lock,
   Unlock,
-  FileEdit,
-  Eye,
   Video,
   Building,
   FileText,
@@ -46,7 +45,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="reception-table-shell bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table aria-label="فهرست نوبت‌های پذیرش" className="reception-table w-full text-right text-xs">
           <thead className="bg-slate-50/80 text-slate-600 border-b border-slate-200 font-bold select-none">
@@ -181,37 +180,12 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
 
                   {/* Actions */}
                   <td data-label="عملیات" className="p-3.5 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => onOpenDrawer(app)}
-                        aria-label={`مشاهده پرونده و مدارک ${app.trackingCode}`}
-                        title="مشاهده پرونده و مدارک"
-                        className="p-1.5 text-slate-600 hover:text-teal-700 hover:bg-slate-100 rounded-lg transition"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => onOpenInsuranceModal(app)}
-                        aria-label={`اصلاح سهم بیمه ${app.trackingCode}`}
-                        title="اصلاح سهم بیمه"
-                        className="p-1.5 text-slate-600 hover:text-teal-700 hover:bg-slate-100 rounded-lg transition"
-                      >
-                        <FileEdit className="w-4 h-4" />
-                      </button>
-
-                      {app.isSoftLocked && (
-                        <button
-                          type="button"
-                          onClick={() => onOpenEmergencyUnlock(app)}
-                          className="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition shadow-sm"
-                        >
-                          بازگشایی اضطراری
-                        </button>
-                      )}
-                    </div>
+                    <AppointmentActions
+                      appointment={app}
+                      onOpenDrawer={onOpenDrawer}
+                      onOpenInsuranceModal={onOpenInsuranceModal}
+                      onOpenEmergencyUnlock={onOpenEmergencyUnlock}
+                    />
                   </td>
                 </tr>
               );

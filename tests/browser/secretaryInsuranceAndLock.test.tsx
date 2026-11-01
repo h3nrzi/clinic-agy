@@ -8,6 +8,7 @@ import { walletRepository } from '@/mocks/repositories/walletRepository';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { useScenarioStore } from '@/shared/stores/useScenarioStore';
 import { useBookingStore } from '@/shared/stores/useBookingStore';
+import userEvent from '@testing-library/user-event';
 
 describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCREEN-05, AC-03, AC-04, AC-05)', () => {
   beforeEach(() => {
@@ -18,12 +19,39 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     useBookingStore.getState().resetBooking();
   });
 
+  it('opens row actions with the keyboard, dismisses them and opens the selected patient record', async () => {
+    const user = userEvent.setup();
+    useAuthStore.getState().switchRole('SECRETARY_TEHRAN');
+    renderApp();
+    const trigger = screen.getByRole('button', { name: 'عملیات نوبت AGY-10142' });
+    expect(screen.queryByRole('button', { name: 'اصلاح سهم بیمه' })).toBeNull();
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    const panel = screen.getByRole('group', { name: 'عملیات نوبت AGY-10142' });
+    expect(document.activeElement).toBe(within(panel).getByRole('button', { name: 'مشاهده پرونده و مدارک' }));
+    expect(within(panel).queryByRole('button', { name: 'بازگشایی اضطراری' })).toBeNull();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('group', { name: 'عملیات نوبت AGY-10142' })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    await user.click(trigger);
+    await user.click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    await user.click(trigger);
+    await user.click(screen.getByRole('heading', { name: /میز کار پذیرش/ }));
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    await user.click(trigger);
+    await user.click(screen.getByRole('button', { name: 'مشاهده پرونده و مدارک' }));
+    expect(screen.getByRole('dialog', { name: 'جزئیات پرونده و نوبت بیمار' })).toBeDefined();
+    expect(screen.queryByRole('group', { name: 'عملیات نوبت AGY-10142' })).toBeNull();
+    expect(screen.getAllByText('AGY-10142').length).toBeGreaterThan(1);
+  });
+
   it.each(['SECRETARY_TEHRAN', 'SECRETARY_ISFAHAN'] as const)('keeps %s branch, status and search filters explicit and resettable', async (role) => {
     useAuthStore.getState().switchRole(role);
     renderApp();
     const ownBranch = screen.getByRole('button', { name: role === 'SECRETARY_TEHRAN' ? 'شعبه تهران + آنلاین' : 'شعبه اصفهان + آنلاین' });
     expect(ownBranch.getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: 'همه شعب' }));
+    fireEvent.click(screen.getByRole('button', { name: role === 'SECRETARY_TEHRAN' ? 'شعبه تهران + آنلاین' : 'شعبه اصفهان + آنلاین' }));
     fireEvent.click(screen.getByRole('button', { name: /قفل نرم فعال/ }));
     expect(screen.getByText('AGY-10143')).toBeDefined();
     expect(screen.queryByText('AGY-10142')).toBeNull();
@@ -47,6 +75,36 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(document.body.style.overflow).toBe('auto');
     document.body.style.overflow = '';
+  });
+
+  it.each(['SECRETARY_TEHRAN', 'SECRETARY_ISFAHAN'] as const)('limits filters, search and results to the branch of %s and online visits', role => {
+    useAuthStore.getState().switchRole(role);
+    renderApp();
+    const ownBranch = role === 'SECRETARY_TEHRAN' ? 'TEHRAN' : 'ISFAHAN';
+    const ownLabel = role === 'SECRETARY_TEHRAN' ? 'تهران' : 'اصفهان';
+    const otherLabel = role === 'SECRETARY_TEHRAN' ? 'اصفهان' : 'تهران';
+    expect(screen.queryByRole('button', { name: `فقط ${otherLabel}` })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'همه شعب' })).toBeNull();
+    const filters = [
+      { label: `شعبه ${ownLabel} + آنلاین`, branch: 'ALL' },
+      { label: `فقط ${ownLabel}`, branch: ownBranch },
+      { label: 'فقط آنلاین', branch: 'ONLINE' },
+    ];
+    for (const filter of filters) {
+      const button = screen.getByRole('button', { name: filter.label });
+      fireEvent.click(button);
+      expect(button.getAttribute('aria-pressed')).toBe('true');
+      const expected = appointmentRepository.getAll().filter(app => (app.branchId === ownBranch || app.branchId === 'ONLINE') && (filter.branch === 'ALL' || app.branchId === filter.branch)).map(app => app.trackingCode).sort();
+      const table = screen.queryByRole('table', { name: 'فهرست نوبت‌های پذیرش' });
+      const actual = table ? within(table).getAllByRole('button', { name: /^AGY-/ }).map(button => button.textContent).sort() : [];
+      expect(actual).toEqual(expected);
+    }
+    fireEvent.click(screen.getByRole('button', { name: `شعبه ${ownLabel} + آنلاین` }));
+    const otherAppointment = appointmentRepository.getAll().find(app => app.branchId !== ownBranch && app.branchId !== 'ONLINE')!;
+    fireEvent.change(screen.getByRole('searchbox', { name: 'جستجوی نوبت‌ها' }), { target: { value: otherAppointment.trackingCode } });
+    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.getByText('هیچ نوبتی با شرایط فیلتر انتخابی یافت نشد')).toBeDefined();
+    expect(document.querySelector('.workspace-footer')).toBeNull();
   });
 
   it('closes only the top document layer with Escape and restores drawer focus', () => {
@@ -100,6 +158,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
 
     // 2. Open Insurance Edit Modal for AGY-10142
     // Row buttons: find the edit insurance button
+    fireEvent.click(screen.getByRole('button', { name: 'عملیات نوبت AGY-10142' }));
     const editInsuranceBtns = screen.getAllByTitle('اصلاح سهم بیمه');
     expect(editInsuranceBtns.length).toBeGreaterThan(0);
     fireEvent.click(editInsuranceBtns[0]);
@@ -157,6 +216,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     await switchAccount('SECRETARY_TEHRAN');
 
     // Verify Emergency Unlock button is available in the table
+    fireEvent.click(screen.getByRole('button', { name: 'عملیات نوبت AGY-10142' }));
     const emergencyUnlockBtns = screen.getAllByRole('button', { name: /بازگشایی اضطراری/ });
     expect(emergencyUnlockBtns.length).toBeGreaterThan(0);
     fireEvent.click(emergencyUnlockBtns[0]);

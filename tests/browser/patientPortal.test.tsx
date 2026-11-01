@@ -60,6 +60,32 @@ describe("Patient portal through App and Router", () => {
     expect(within(next).queryByText("دکتر رضا حسینی")).toBeNull();
   });
 
+  it('opens the selected prescription, traps focus and restores its opener on dismissal', () => {
+    renderApp('/patient');
+    const card = screen.getByRole('article', { name: 'نوبت AGY-10099' });
+    const opener = within(card).getByRole('button', { name: 'مشاهده نسخه و توصیه‌ها' });
+    opener.focus();
+    fireEvent.click(opener);
+    const dialog = screen.getByRole('dialog', { name: 'نسخه و توصیه‌های پزشک' });
+    expect(within(dialog).getByText('AGY-10099')).toBeDefined();
+    const close = within(dialog).getByRole('button', { name: 'بستن نسخه' });
+    const done = within(dialog).getByRole('button', { name: 'بستن' });
+    expect(document.activeElement).toBe(close);
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(screen.queryByRole('button', { name: 'خروج از حساب' })).toBeNull();
+    fireEvent.keyDown(close, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(done);
+    fireEvent.keyDown(done, { key: 'Tab' });
+    expect(document.activeElement).toBe(close);
+    fireEvent.keyDown(close, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+    fireEvent.click(opener);
+    fireEvent.click(screen.getByRole('button', { name: 'بستن' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+  });
+
   it("shows only prescription and follow-up even with long clinical content", () => {
     const app = memoryDb.getById("appointments", "app-4")!;
     const prescriptions = "نسخه آزمایشی بسیار طولانی ".repeat(40);
@@ -78,13 +104,13 @@ describe("Patient portal through App and Router", () => {
     });
     renderApp("/patient");
     const card = screen.getByRole("article", { name: "نوبت AGY-10099" });
-    const note = within(card).getByRole("region", {
-      name: "نسخه و توصیه‌های پزشک",
-    });
-    expect(within(note).getByText(prescriptions.trim())).toBeDefined();
-    expect(within(note).getByText(app.clinicalNote!.followUp)).toBeDefined();
     const next = screen.getByRole("region", { name: "نوبت بعدی شما" });
     expect(within(next).getByText("پزشک".repeat(70))).toBeDefined();
+    expect(screen.queryByText(prescriptions.trim())).toBeNull();
+    fireEvent.click(within(card).getByRole('button', { name: 'مشاهده نسخه و توصیه‌ها' }));
+    const note = screen.getByRole("dialog", { name: "نسخه و توصیه‌های پزشک" });
+    expect(within(note).getByText(prescriptions.trim())).toBeDefined();
+    expect(within(note).getByText(app.clinicalNote!.followUp)).toBeDefined();
     for (const privateText of [
       "PRIVATE_COMPLAINT",
       "PRIVATE_FINDINGS",
@@ -92,6 +118,7 @@ describe("Patient portal through App and Router", () => {
     ]) {
       expect(screen.queryByText(privateText)).toBeNull();
     }
+    fireEvent.click(within(note).getByRole('button', { name: 'بستن نسخه' }));
     expect(
       screen.queryByRole("article", { name: "نوبت AGY-10143" }),
     ).toBeNull();

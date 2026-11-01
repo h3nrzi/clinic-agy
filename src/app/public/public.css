@@ -176,13 +176,6 @@
   font-size: 14px;
   margin-top: 14px;
 }
-.public-footer {
-  padding: 24px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 12px;
-  text-align: center;
-}
 @media (max-width: 900px) {
   .public-hero {
     grid-template-columns: 1fr;
