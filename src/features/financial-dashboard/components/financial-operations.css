@@ -1,0 +1,61 @@
+.financial-shift-dialog {overflow-y:auto; overscroll-behavior: contain;}
+.financial-shift-dialog > div {max-height:calc(100dvh - 2rem); overflow-y:auto;}
+.financial-shift-dialog :is(input,select,button) {min-height:44px; min-width:44px;}
+.operation-error {padding:1rem; border:1px solid #fecdd3; background:#fff1f2; color:#9f1239; border-radius:12px; line-height:1.8;}
+.financial-operations {min-width:0; padding-bottom:5.5rem; font-size:.875rem; line-height:1.7;}
+.financial-operations > *, .financial-operations form {min-width:0;}
+.financial-operations :is(button,select,input) {min-height:44px; min-width:44px; font-size:.875rem;}
+.financial-operations :is(button,input,select):focus-visible,.financial-shift-dialog :is(button,input,select):focus-visible,.operation-comparison:focus-visible {outline:3px solid #0f766e; outline-offset:3px;}
+.financial-operations button:disabled {opacity:.5; cursor:not-allowed;}
+.operation-page-header {display:flex; justify-content:space-between; gap:1.5rem; align-items:start; padding: .5rem 0 1rem; border-bottom:1px solid #cbd5e1;}
+.operation-page-header h2 {font-size:1.5rem; font-weight:800; color:#0f172a; margin:.25rem 0;}
+.operation-page-header p {color:#475569;}
+.operation-page-header .operation-eyebrow {font-size:.75rem; color:#0f766e; font-weight:700;}
+.operation-parameters {display:flex; flex-direction:column; gap:.5rem; flex-shrink:0; background:white; border:1px solid #e2e8f0; border-radius:12px; padding:.75rem 1rem; font-size:.75rem;}
+.operation-parameters span {display:flex; gap:.5rem; align-items:center;}
+.operation-steps {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border:1px solid #e2e8f0; background:white; border-radius:12px; overflow:hidden;}
+.operation-steps li {padding:.75rem 1rem; display:flex; align-items:center; gap:.5rem; font-weight:700;}
+.operation-steps li + li {border-inline-start:1px solid #e2e8f0;}
+.operation-steps span {display:grid; place-items:center; flex-shrink:0; width:28px; height:28px; border-radius:50%; background:#f0fdfa; color:#115e59;}
+.operation-upload {position:relative;}
+.financial-operations .operation-file-input {position:absolute; width:1px; height:1px; min-width:0; min-height:0; opacity:0; clip-path:inset(50%);}
+.operation-upload:focus-within {outline:3px solid #0f766e; outline-offset:3px;}
+.operation-file-label {min-height:110px;}
+.operation-comparison {max-height:32rem; max-width:100%; overflow:auto; overscroll-behavior:contain;}
+.operation-comparison table {min-width:1000px; font-variant-numeric:tabular-nums;}
+.operation-comparison thead {position:sticky; top:0; z-index:1;}
+.operation-comparison td {vertical-align:top; min-width:100px;}
+.operation-comparison td:nth-child(4) {min-width:200px;}
+.operation-comparison td:nth-child(6) {color:#475569;}
+.operation-comparison td:last-child {background:#f0fdfa;}
+.operation-summary {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem;}
+.operation-summary > div {background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:.75rem 1rem; display:flex; justify-content:space-between; gap:.5rem;}
+.operation-summary strong {font-size:1.125rem; font-variant-numeric:tabular-nums;}
+.operation-toolbar {display:flex; gap:1rem; justify-content:space-between; flex-wrap:wrap; align-items:center; color:#475569;}
+.operation-switch {display:flex; flex-wrap:wrap; padding:4px; border:1px solid #cbd5e1; border-radius:12px; background:#f1f5f9; gap:4px;}
+.operation-switch button {padding:.5rem .75rem; border-radius:8px; font-weight:700;}
+.operation-switch button[aria-pressed="true"] {background:white; color:#115e59; box-shadow:0 1px 3px #0002;}
+.operation-success {padding:.75rem 1rem; background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; border-radius:10px;}
+.operation-empty {padding:2rem 1rem; text-align:center; color:#475569; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px;}
+.shift-week {display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:.5rem;}
+.shift-day {min-width:0;}
+.shift-day h4 {display:flex; flex-direction:column; padding:.75rem .5rem; background:#f1f5f9; border-radius:8px; font-size:.875rem; font-weight:700;}
+.shift-day h4 span {font-size:.75rem; font-weight:400; color:#475569;}
+.shift-card {border:1px solid #cbd5e1; border-inline-start:3px solid #0f766e; border-radius:8px; padding:.75rem .5rem; margin-top:.5rem; background:white; overflow-wrap:anywhere; font-size:.75rem;}
+.shift-card-doctor {font-weight:700; color:#0f172a; margin-bottom:.5rem;}
+.shift-branch {color:#115e59; background:#f0fdfa; border-radius:4px; padding:2px 4px; display:inline-block;}
+.shift-time {display:flex; align-items:center; flex-wrap:wrap; gap:4px; border-top:1px solid #e2e8f0; margin-top:.5rem; padding-top:.5rem; font-variant-numeric:tabular-nums;}
+.shift-day-empty {color:#64748b; padding:1rem .5rem; text-align:center;}
+.shift-list .shift-day > [role="list"] {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem;}
+.shift-list .shift-card {padding:1rem;}
+.operation-settings {max-width:960px;}
+.operation-setting-fields > div {display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:1.5rem; align-items:center; padding:1rem 0; border-bottom:1px solid #e2e8f0;}
+.operation-setting-fields > div > div {flex-wrap:wrap;}
+.operation-setting-fields label {font-size:.875rem;}
+.operation-setting-fields span {font-size:.75rem; font-weight:400;}
+.financial-shift-dialog {font-size:.875rem; direction:rtl;}
+@media(max-width:1100px) {.shift-week {grid-template-columns:repeat(4,minmax(0,1fr));}.shift-list .shift-day > [role="list"] {grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:767px) {.operation-page-header {flex-direction:column;}.operation-parameters {width:100%;}.operation-steps li {padding:.5rem; flex-direction:column; text-align:center;}.operation-summary {grid-template-columns:1fr;}.shift-week {grid-template-columns:repeat(2,minmax(0,1fr));}.shift-list .shift-day > [role="list"] {grid-template-columns:1fr;}.operation-setting-fields > div {grid-template-columns:1fr; gap:.5rem;}.financial-operations > div > .p-6,.operation-settings-form {padding:1rem;}.operation-page-header h2 {font-size:1.25rem;}}
+@media(prefers-reduced-motion:reduce) {.financial-operations *,.financial-shift-dialog * {animation:none!important; transition:none!important;}}
+.financial-operations .text-xs {font-size:.8125rem;}
+.operation-file-name {overflow-wrap:anywhere; color:#475569;}
