@@ -22,7 +22,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
     renderApp();
 
     // 1. Initial State: Click "رزرو نوبت جدید آنلاین"
-    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
+    const newBookingTab = screen.getByRole('link', { name: 'رزرو نوبت جدید' });
     fireEvent.click(newBookingTab);
 
     // Verify Wizard Header and Step 1
@@ -135,7 +135,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
     renderApp();
 
     // Go to booking
-    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
+    const newBookingTab = screen.getByRole('link', { name: 'رزرو نوبت جدید' });
     fireEvent.click(newBookingTab);
 
     // Step 1 -> Next
@@ -170,7 +170,7 @@ describe('WP-02: Representative Flow (FLOW-02, SCREEN-02, SCREEN-03, SCREEN-04)'
     renderApp();
 
     // Go to booking
-    fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ }));
+    fireEvent.click(screen.getByRole('link', { name: 'رزرو نوبت جدید' }));
     fireEvent.click(screen.getByRole('button', { name: /مرحله بعد: انتخاب پزشک و تقویم/ }));
     const slotBtns = screen.getAllByRole('button', { name: /ساعت/ });
     fireEvent.click(slotBtns[0]);

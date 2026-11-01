@@ -57,6 +57,7 @@ describe("WP-00: App Component & Role Switcher UI Verification", () => {
     renderApp();
 
     // Click scenario button
+    fireEvent.click(screen.getByRole("button", { name: "ابزارهای ارزیابی دمو" }));
     const scenarioBtn = screen.getByRole("button", {
       name: /تزریق بیمار بدهکار/,
     });
@@ -86,6 +87,7 @@ describe("WP-00: App Component & Role Switcher UI Verification", () => {
     renderApp();
 
     // Inject scenario first
+    fireEvent.click(screen.getByRole("button", { name: "ابزارهای ارزیابی دمو" }));
     const scenarioBtn = screen.getByRole("button", {
       name: /تزریق بیمار بدهکار/,
     });
@@ -93,6 +95,7 @@ describe("WP-00: App Component & Role Switcher UI Verification", () => {
     expect(screen.getByText(/سناریوی بیمار بدهکار فعال شد/)).toBeDefined();
 
     // Click Factory Reset
+    fireEvent.click(screen.getByRole("button", { name: "ابزارهای ارزیابی دمو" }));
     const resetBtn = screen.getByRole("button", {
       name: /ریست کارخانه‌ای داده‌ها/,
     });

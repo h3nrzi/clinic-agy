@@ -1,4 +1,3 @@
-import { useWorkspaceSection } from '@/shared/stores/useWorkspaceStore';
 import React, { useState, useEffect, useMemo } from 'react';
 import { PatientDocument } from '@/shared/types';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
@@ -17,14 +16,14 @@ import {
   Lock,
   CreditCard,
   Search,
-  CalendarCheck,
   CalendarDays,
+  CalendarCheck,
   CheckCircle2,
   XCircle,
   AlertTriangle,
 } from 'lucide-react';
 
-export const SecretaryDashboard: React.FC = () => {
+export const SecretaryDashboard: React.FC<{ section?: 'APPOINTMENTS' | 'DOCTOR_LEAVES' }> = ({ section: activeSection = 'APPOINTMENTS' }) => {
   const { currentRole, currentUser } = useAuthStore();
 
   // Reactive listener to memoryDb updates
@@ -35,9 +34,6 @@ export const SecretaryDashboard: React.FC = () => {
     });
     return unsubscribe;
   }, []);
-
-  // Section state (Appointments Desk vs Doctor Leaves Management)
-  const [activeSection, setActiveSection] = useWorkspaceSection<'APPOINTMENTS' | 'DOCTOR_LEAVES'>('APPOINTMENTS');
 
   // Filter state
   const isTehranSecretary = currentRole === 'SECRETARY_TEHRAN';
@@ -50,7 +46,6 @@ export const SecretaryDashboard: React.FC = () => {
 
   // Doctor leaves
   const allLeaves = scheduleRepository.getLeaves();
-  const pendingLeaves = allLeaves.filter((l) => l.status === 'PENDING_APPROVAL');
 
   // Modals & Drawer State (ID-based to stay synchronously reactive)
   const [drawerAppId, setDrawerAppId] = useState<string | null>(null);
@@ -173,35 +168,6 @@ export const SecretaryDashboard: React.FC = () => {
             همه شعب
           </button>
         </div>
-      </div>
-
-      {/* Secretary Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveSection('APPOINTMENTS')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeSection === 'APPOINTMENTS'
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <CalendarCheck className="w-4 h-4" />
-          <span>میز کار نوبت‌ها و پذیرش بیماران</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveSection('DOCTOR_LEAVES')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeSection === 'DOCTOR_LEAVES'
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <CalendarDays className="w-4 h-4" />
-          <span>بررسی مرخصی پزشکان ({toPersianDigits(pendingLeaves.length)} در انتظار تأیید)</span>
-        </button>
       </div>
 
       {activeSection === 'DOCTOR_LEAVES' ? (

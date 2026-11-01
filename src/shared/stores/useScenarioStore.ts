@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { memoryDb } from '@/mocks/db/memoryDb';
-import { useAuthStore } from './useAuthStore';
+import { INDEBTED_PATIENT_PROFILE, useAuthStore } from './useAuthStore';
 
 export type ScenarioPreset = 'NORMAL' | 'INDEBTED_PATIENT' | 'POOR_NETWORK';
 
 interface ScenarioState {
+  resetRevision: number;
   activeScenario: ScenarioPreset;
   statusNotice: string | null;
   isSimulatingDelay: boolean;
@@ -14,22 +15,16 @@ interface ScenarioState {
 }
 
 export const useScenarioStore = create<ScenarioState>((set) => ({
+  resetRevision: 0,
   activeScenario: 'NORMAL',
   statusNotice: null,
   isSimulatingDelay: false,
 
   injectScenario: (preset: ScenarioPreset) => {
     if (preset === 'INDEBTED_PATIENT') {
-      // Switch active user to Mehdi Saeidi (who has debt and soft-lock)
-      useAuthStore.getState().setUser({
-        id: 'pat-3',
-        name: 'مهدی سعیدی (سناریوی بدهکار)',
-        role: 'PATIENT',
-        roleTitle: 'بیمار دارای بدهی و قفل نرم',
-        nationalCode: '۰۰۳۴۵۶۷۸۹۰',
-        mobile: '۰۹۱۲۵۵۵۶۶۷۷',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
-      });
+      const auth = useAuthStore.getState();
+      if (!auth.isLoggedIn || auth.currentRole !== 'PATIENT') return;
+      auth.setUser(INDEBTED_PATIENT_PROFILE);
 
       set({
         activeScenario: 'INDEBTED_PATIENT',
@@ -42,8 +37,8 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
         statusNotice: 'سناریوی اینترنت ضعیف فعال شد: تمامی درخواست‌ها با تأخیر ۱.۵ ثانیه‌ای شبیه‌سازی می‌شوند.',
       });
     } else {
-      // Normal
-      useAuthStore.getState().switchRole('PATIENT');
+      const auth = useAuthStore.getState();
+      if (auth.isLoggedIn && auth.currentRole === 'PATIENT' && auth.currentUser.id === 'pat-3') auth.switchRole('PATIENT');
       set({
         activeScenario: 'NORMAL',
         isSimulatingDelay: false,
@@ -54,12 +49,12 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
 
   resetDatabase: () => {
     memoryDb.resetToFactoryDefaults();
-    useAuthStore.getState().switchRole('PATIENT');
-    set({
+    set(state => ({
+      resetRevision: state.resetRevision + 1,
       activeScenario: 'NORMAL',
       isSimulatingDelay: false,
       statusNotice: 'تمامی داده‌های دیتابیس به مقادیر اولیه کارخانه‌ای (Factory Reset) بازگردانده شدند.',
-    });
+    }));
   },
 
   dismissNotice: () => set({ statusNotice: null }),

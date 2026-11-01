@@ -54,7 +54,7 @@ button:not(:disabled), select { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 :focus-visible { outline: 3px solid var(--brand) !important; outline-offset: 3px; }
 input, select, textarea { accent-color: var(--brand); }
-input:not([type=checkbox]):not([type=radio]), select, button { min-height: 40px; }
+input:not([type=checkbox]):not([type=radio]), select, button { min-height: 44px; }
 h1,h2,h3 { letter-spacing: -.025em; line-height: 1.7; }
 main .rounded-2xl, main .rounded-xl { border-radius: var(--radius-panel); }
 main .shadow-sm { box-shadow: var(--shadow-panel); }
@@ -78,12 +78,11 @@ main tbody tr:hover { background: #f3f9fa; }
 @media(min-width:1280px) {
  .workspace-sidebar { display:block; position:fixed; right:0; top:0; bottom:0; width:224px; background:#173444; z-index:39; border-left:1px solid #294958; }
  .workspace-content { margin-inline-start:224px; }
- body header { margin-inline-start:224px; }
+ .workspace-shell > .app-header, .workspace-footer { margin-inline-start:224px; }
  main { max-width:1600px !important; }
 }
 @media(max-width:640px) {
  main { padding:20px 12px !important; }
- main .grid-cols-2 { grid-template-columns: minmax(0,1fr); }
  main .flex { min-width:0; }
  main h2 { font-size:1rem; }
  main td, main th { padding:12px; }
@@ -154,7 +153,7 @@ main tbody tr:hover { background: #f3f9fa; }
 .sidebar-link.is-active { background:#2b5060; color:white; box-shadow:inset -3px 0 #73c5c7; }
 [role=dialog] { z-index:80; overflow-y:auto; }
 [role=dialog] > div { max-height:calc(100dvh - 32px); overflow-y:auto; }
-[role=dialog] button { min-height:40px; }
+[role=dialog] button { min-height:44px; }
 @media(max-width:640px) { [role=dialog] { padding:12px; } [role=dialog] > div { max-height:calc(100dvh - 24px); } }
 .identity-card { width:min(480px,100%); background:white; border-radius:16px; padding:28px; max-height:calc(100dvh - 32px); overflow:auto; }
 .identity-card h2 { font-size:23px; font-weight:750; margin-top:16px; }
@@ -184,3 +183,32 @@ main .font-mono { unicode-bidi:isolate; }
  .reception-table td::before { content:attr(data-label); display:block; font-family:var(--font-sans); color:var(--muted); font-size:11px; font-weight:400; margin-bottom:4px; }
  .reception-table td:first-child { color:var(--brand); border-bottom:1px solid var(--line); }
 }
+
+/* Route shell: reserve room for floating tools without affecting nested panel headers. */
+.workspace-shell { min-width:0; }
+.workspace-content { min-width:0; padding-bottom:88px; }
+.workspace-main { width:100%; min-width:0; }
+.workspace-sidebar { overflow-y:auto; }
+.sidebar-bottom { position:static; margin-top:48px; }
+.workspace-overlay { position:fixed; inset:0; z-index:100; background:#102d4266; display:flex; justify-content:flex-start; }
+.mobile-workspace-dialog { position:relative; width:min(320px,90vw); min-height:100dvh; background:#173444; color:white; overflow-y:auto; padding-top:28px; }
+.mobile-workspace-dialog .sidebar-close { display:block; position:absolute; left:12px; top:10px; color:white; min-width:44px; }
+.demo-tools-trigger { position:fixed; inset-inline-end:max(16px,env(safe-area-inset-left)); bottom:max(16px,env(safe-area-inset-bottom)); z-index:50; display:flex; align-items:center; gap:8px; padding:12px 16px; border-radius:999px; color:white; background:var(--brand); box-shadow:0 4px 18px #17344430; }
+.demo-tools-overlay { align-items:flex-end; justify-content:flex-end; padding:16px; }
+.demo-tools-panel { width:min(380px,100%); max-height:calc(100dvh - 32px); overflow:auto; border-radius:16px; background:white; padding:20px; color:var(--ink); }
+.demo-tools-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.demo-tools-heading h2 { font-weight:700; }
+.demo-tools-heading button { min-width:44px; }
+.demo-tools-panel p { margin:12px 0; color:var(--muted); font-size:13px; }
+.demo-tools-panel > button { display:flex; align-items:center; justify-content:center; gap:8px; padding:10px; width:100%; border:1px solid var(--line); border-radius:8px; margin-top:12px; }
+.demo-tools-panel > button:disabled { opacity:.55; }
+@media(max-width:480px) { .topbar { flex-wrap:wrap; } .topbar-actions { width:100%; justify-content:flex-end; } .demo-tools-trigger { padding:10px 14px; } }
+
+.app-header .topbar-icon, .app-header .popover-heading button,
+.app-header [aria-label="بستن پیام"] { min-width:44px; }
+
+/* Sticky visit actions sit above the floating-tools lane, including safe areas. */
+.workspace-shell { --demo-tools-lane:calc(88px + env(safe-area-inset-bottom)); }
+.workspace-shell .clinical-save-bar { bottom:var(--demo-tools-lane); }
+.workspace-main { scroll-padding-bottom:var(--demo-tools-lane); }
+.workspace-main :focus { scroll-margin-block:24px var(--demo-tools-lane); }

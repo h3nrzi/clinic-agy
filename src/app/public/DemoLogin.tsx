@@ -6,7 +6,6 @@ import { useBookingStore } from "@/shared/stores/useBookingStore";
 import { IdentityForm } from "./IdentityForm";
 import {
   DEMO_ACCOUNTS,
-  dashboardPath,
   permittedReturnPath,
 } from "@/app/routing/roleRoutes";
 import type { Role } from "@/shared/types";
@@ -17,7 +16,7 @@ export function DemoLogin() {
   const location = useLocation();
   const navigate = useNavigate();
   if (auth.isLoggedIn)
-    return <Navigate to={dashboardPath(auth.currentRole)} replace />;
+    return <Navigate to={permittedReturnPath(location.state?.returnTo, auth.currentRole)} replace />;
   return (
     <main className="public-main login-main">
       <Link className="login-back" to="/">

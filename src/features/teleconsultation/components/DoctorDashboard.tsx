@@ -1,5 +1,4 @@
 import { DoctorFinancialSummary } from './DoctorFinancialSummary';
-import { useWorkspaceSection } from '@/shared/stores/useWorkspaceStore';
 import React, { useState } from 'react';
 import {
   UserCheck,
@@ -9,7 +8,6 @@ import {
   Building,
   Search,
   Clock,
-  CalendarDays,
   FilePlus2,
   Briefcase,
 } from 'lucide-react';
@@ -20,6 +18,7 @@ import { doctorRepository } from '@/mocks/repositories/doctorRepository';
 import { DoctorLeaveRequestModal } from './DoctorLeaveRequestModal';
 
 interface DoctorDashboardProps {
+  section?: 'APPOINTMENTS' | 'SHIFTS_AND_LEAVES';
   doctorName: string;
   medicalCouncilNumber?: string;
   specialty?: string;
@@ -29,12 +28,12 @@ interface DoctorDashboardProps {
 
 export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   doctorName,
+  section: activeTab = 'APPOINTMENTS',
   medicalCouncilNumber = '۱۲۳۴۵-ن',
   specialty = 'متخصص داخلی و تله‌مدیسین',
   appointments,
   onStartConsultation,
 }) => {
-  const [activeTab, setActiveTab] = useWorkspaceSection<'APPOINTMENTS' | 'SHIFTS_AND_LEAVES'>('APPOINTMENTS');
   const [filterType, setFilterType] = useState<'ALL' | 'ONLINE' | 'COMPLETED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -104,35 +103,6 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       </div>
 
       {currentDoc && <DoctorFinancialSummary doctor={currentDoc} appointments={appointments} />}
-      {/* Doctor Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('APPOINTMENTS')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeTab === 'APPOINTMENTS'
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          <span>نوبت‌های ثبت‌شده ({toPersianDigits(appointments.length)})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('SHIFTS_AND_LEAVES')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeTab === 'SHIFTS_AND_LEAVES'
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <CalendarDays className="w-4 h-4" />
-          <span>برنامهٔ شیفت‌های هفتگی و مرخصی‌ها ({toPersianDigits(doctorShifts.length)} شیفت)</span>
-        </button>
-      </div>
-
       {activeTab === 'SHIFTS_AND_LEAVES' ? (
         <div className="space-y-6">
           {/* Shifts Section */}

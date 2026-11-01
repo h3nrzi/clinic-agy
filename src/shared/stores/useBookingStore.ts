@@ -176,3 +176,10 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     });
   },
 }));
+
+// Booking inputs and confirmations belong to one account, never the next login/scenario.
+useAuthStore.subscribe((state, previous) => {
+  if (state.currentUser.id !== previous.currentUser.id || (!state.isLoggedIn && previous.isLoggedIn)) {
+    useBookingStore.getState().resetBooking();
+  }
+});

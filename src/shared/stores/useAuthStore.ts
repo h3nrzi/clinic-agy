@@ -68,6 +68,14 @@ export const ROLE_PROFILES: Record<Role, AuthUser> = {
   },
 };
 
+/** Additional patient identity is activated only by the patient-only demo scenario. */
+export const INDEBTED_PATIENT_PROFILE: AuthUser = {
+  id: 'pat-3', name: 'مهدی سعیدی (سناریوی بدهکار)', role: 'PATIENT',
+  roleTitle: 'بیمار دارای بدهی و قفل نرم', nationalCode: '۰۰۳۴۵۶۷۸۹۰',
+  mobile: '۰۹۱۲۵۵۵۶۶۷۷',
+  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
+};
+
 const SESSION_KEY = "agy-demo-session-v1";
 
 interface AuthState {
@@ -117,7 +125,7 @@ export function restoreDemoSession() {
   let user: AuthUser | undefined;
   try {
     const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
-    user = Object.values(ROLE_PROFILES).find(
+    user = [...Object.values(ROLE_PROFILES), INDEBTED_PATIENT_PROFILE].find(
       (profile) => profile.id === saved?.accountId,
     );
   } catch {

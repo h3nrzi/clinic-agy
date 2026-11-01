@@ -1,10 +1,9 @@
-import { Link, Navigate, useLocation } from "react-router";
+import { Link, Navigate, Outlet, useLocation } from "react-router";
 import { useAuthStore } from "@/shared/stores/useAuthStore";
 import { dashboardPath } from "./roleRoutes";
 import { WorkspaceSidebar } from "@/app/layout/WorkspaceSidebar";
-import { RoleSwitcherToolbar } from "@/app/layout/RoleSwitcherToolbar";
+import { DemoTools } from "@/app/layout/DemoTools";
 import { Navbar } from "@/app/layout/Navbar";
-import { AppLayout } from "@/app/layout/AppLayout";
 import type { Role } from "@/shared/types";
 
 export function WorkspaceRoute({ role }: { role: Role }) {
@@ -26,16 +25,16 @@ export function WorkspaceRoute({ role }: { role: Role }) {
     );
   return (
     <div
-      className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900"
+      className="workspace-shell min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900"
       dir="rtl"
     >
-      <RoleSwitcherToolbar />
       <Navbar />
       <WorkspaceSidebar />
       <div className="flex-1 workspace-content" id="workspace">
-        <AppLayout />
+        <Outlet />
       </div>
-      <footer className="public-footer">
+      <DemoTools />
+      <footer className="public-footer workspace-footer">
         کلینیک سلامت آژی • محیط نمایشی با داده‌های ساختگی
       </footer>
     </div>
