@@ -1,11 +1,11 @@
 /* Operations use compact white panels; clinical editing keeps a comfortable reading measure. */
-.doctor-workspace,.consultation-workspace{min-width:0;color:var(--text-primary,#0f172a)}
-.doctor-workspace>div:first-child{border-top:3px solid var(--accent,#0f766e);padding:1rem;border-radius:12px}
+.doctor-workspace,.consultation-workspace{min-width:0;color:var(--ink)}
+.doctor-workspace>div:first-child{border-top:3px solid var(--brand);padding:1rem;border-radius:12px}
 .doctor-name{font-size:.875rem;font-weight:600;margin-block-start:.25rem}
 .doctor-workspace button,.consultation-workspace button{min-height:44px;min-width:44px;touch-action:manipulation}
 .doctor-workspace input{min-height:44px}
 .doctor-workspace :is(button,input):focus-visible,.consultation-workspace :is(button,textarea):focus-visible{outline:3px solid #0f766e;outline-offset:3px}
-.doctor-workspace .text-slate-400,.consultation-workspace .text-slate-400{color:#64748b}
+.doctor-workspace .text-slate-400,.consultation-workspace .text-slate-400{color:var(--muted)}
 .doctor-workspace>div,.consultation-workspace>div{min-width:0}
 .consultation-workspace .consultation-columns{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;align-items:start}
 .consultation-video,.consultation-editor{min-width:0}
@@ -28,3 +28,43 @@
 @media(prefers-reduced-motion:reduce){
  .doctor-workspace *,.consultation-workspace *{animation:none!important;transition:none!important}
 }
+.doctor-workspace .doctor-finance{display:grid;gap:1rem;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:1rem}
+.doctor-workspace .doctor-finance h3{font-weight:700;font-size:.875rem}
+.doctor-workspace .doctor-finance p{color:var(--muted);font-size:.75rem;margin-top:.25rem}
+.doctor-workspace .doctor-finance dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+.doctor-workspace .doctor-finance dl>div{min-width:0;border-inline-start:2px solid #e2e8f0;padding-inline-start:.75rem}
+.doctor-workspace .doctor-finance dt{font-size:.75rem;color:var(--muted)}
+.doctor-workspace .doctor-finance dd{font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.doctor-workspace .doctor-finance dl>div:last-child{border-color:#0f766e;color:#0f766e}
+.doctor-metrics>div{padding:.875rem;border-radius:12px;box-shadow:none}
+.doctor-metrics>div>div:nth-child(2){margin-top:.5rem;font-variant-numeric:tabular-nums}
+.doctor-filters{padding:.75rem!important;gap:.75rem}
+.doctor-queue-row{padding:1rem!important;gap:1rem}
+.doctor-queue-row>div:first-child{min-width:0}
+.doctor-queue-row>div:last-child{align-self:stretch}
+.doctor-queue-row>div:last-child button{width:100%}
+.doctor-schedule-grid>div{border-radius:12px;padding:1rem}
+@media(min-width:768px){
+ .doctor-workspace .doctor-finance{grid-template-columns:minmax(180px,1fr) minmax(0,2fr);align-items:center}
+ .doctor-queue-row>div:last-child{align-self:center}
+}
+@media(min-width:1200px){
+ .doctor-schedule-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:1rem;align-items:start}
+ .doctor-schedule-grid>div{margin:0!important}
+}
+@media(max-width:479px){
+ .doctor-workspace .doctor-finance dl{grid-template-columns:1fr}
+ .doctor-workspace .doctor-finance dl>div{display:flex;justify-content:space-between;gap:.75rem}
+ .doctor-metrics{gap:.5rem}
+ .doctor-metrics>div>div:last-child{display:none}
+ .doctor-filters>div:first-child{flex-wrap:wrap}
+}
+.doctor-workspace :is(h1,h2,h3,h4,p,dd,span,strong),.consultation-workspace :is(h1,h2,h3,h4,p,span,strong){overflow-wrap:anywhere}
+.consultation-workspace>div:first-child>div,.consultation-workspace>div:first-child>div>div{min-width:0}
+.doctor-leave-overlay{overflow-y:auto;padding-block:max(1rem,env(safe-area-inset-top)) max(1rem,env(safe-area-inset-bottom))}
+.doctor-leave-dialog{max-height:calc(100dvh - 2rem);overflow-y:auto;border-radius:12px;overflow-wrap:anywhere}
+.doctor-leave-dialog :is(input,textarea){font-size:.875rem;min-height:44px}
+.doctor-leave-dialog form{font-size:.875rem}
+.doctor-leave-dialog label{color:var(--ink)}
+.doctor-leave-dialog>div:first-of-type{align-items:flex-start}
+@media(max-width:479px){.doctor-leave-dates{grid-template-columns:1fr}.doctor-leave-dialog{padding:1rem}}

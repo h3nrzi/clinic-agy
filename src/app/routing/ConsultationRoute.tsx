@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
+import { useScenarioStore } from '@/shared/stores/useScenarioStore';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
 import { memoryDb } from '@/mocks/db/memoryDb';
@@ -11,6 +12,7 @@ export function ConsultationRoute() {
   const { appointmentId } = useParams();
   const { currentRole, currentUser } = useAuthStore();
   const navigate = useNavigate();
+  const resetRevision = useScenarioStore(state => state.resetRevision);
   const [, refresh] = useState(0);
   useEffect(() => memoryDb.subscribe(() => refresh(value => value + 1)), []);
   const appointment = appointmentRepository.getById(appointmentId || '');
@@ -22,7 +24,7 @@ export function ConsultationRoute() {
       <Link className="public-primary" to={back}>بازگشت به فضای کار من</Link>
     </section>
   );
-  const key = `${currentUser.id}:${appointment.id}`;
+  const key = `${currentUser.id}:${appointment.id}:${resetRevision}`;
   return currentRole === 'DOCTOR'
     ? <ConsultationRoom key={key} appointment={appointment} doctorName={currentUser.name} onBack={() => navigate(back)} />
     : <PatientConsultationRoom key={key} appointment={appointment} onExit={() => navigate(back)} />;

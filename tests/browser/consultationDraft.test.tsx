@@ -1,13 +1,15 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { ConsultationRoom } from '@/features/teleconsultation/components/ConsultationRoom';
+import { screen, fireEvent, cleanup } from '@testing-library/react';
+import { renderApp } from '../helpers/appFixture';
+import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { memoryDb } from '@/mocks/db/memoryDb';
 
 afterEach(cleanup);
 describe('Consultation workspace continuity', () => {
   it('retains an unsaved clinical note while the doctor reviews documents', () => {
-    const appointment = memoryDb.getAll('appointments')[0];
-    render(<ConsultationRoom appointment={appointment} doctorName={appointment.doctorName} onBack={()=>{}}/>);
+    memoryDb.resetToFactoryDefaults();
+    useAuthStore.getState().switchRole('DOCTOR');
+    renderApp('/doctor/consultations/app-1');
     const field = screen.getByLabelText(/شکایت اصلی بیمار/);
     fireEvent.change(field, {target:{value:'یادداشت ذخیره نشده'}});
     fireEvent.click(screen.getByRole('button',{name:/مدارک و آزمایش‌های بیمار/}));

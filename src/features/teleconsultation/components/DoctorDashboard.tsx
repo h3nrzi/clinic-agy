@@ -105,7 +105,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
       {currentDoc && <DoctorFinancialSummary doctor={currentDoc} appointments={appointments} />}
       {activeTab === 'SHIFTS_AND_LEAVES' ? (
-        <div className="space-y-6">
+        <div className="doctor-schedule-grid space-y-6">
           {/* Shifts Section */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -226,7 +226,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       ) : (
         <>
           {/* KPI Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="doctor-metrics grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
               <div className="text-xs text-slate-500 font-medium">کل نوبت‌های ثبت‌شده</div>
               <div className="text-2xl font-bold text-slate-900 mt-2">{toPersianDigits(totalToday)}</div>
@@ -253,7 +253,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           </div>
 
           {/* Filter and Search Bar */}
-          <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="doctor-filters bg-white rounded-xl p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -301,7 +301,6 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label="جستجوی نوبت‌های پزشک"
-                aria-label="جستجوی نام بیمار یا کد رهگیری"
                 placeholder="جستجوی نام بیمار یا کد رهگیری..."
                 className="w-full pl-3 pr-8 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:border-teal-500 text-xs"
               />
@@ -310,7 +309,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           </div>
 
           {/* Appointments List / Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="doctor-queue bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-teal-600" />
@@ -330,7 +329,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 filteredAppointments.map((app) => (
                   <div
                     key={app.id}
-                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition"
+                    className="doctor-queue-row p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition"
                   >
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">

@@ -57,9 +57,9 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
       role="dialog"
       aria-modal="true"
       aria-labelledby="leave-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+      className="doctor-leave-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
     >
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-right animate-in fade-in zoom-in-95 duration-150">
+      <div className="doctor-leave-dialog bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-right animate-in fade-in zoom-in-95 duration-150">
         {error && <p role="alert" className="bg-rose-50 text-rose-700 p-3 rounded-lg">{error}</p>}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
@@ -105,10 +105,11 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="py-4 space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="doctor-leave-dates grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">از تاریخ (شروع):</label>
+                <label htmlFor="leave-start-date" className="block font-semibold text-slate-700 mb-1">از تاریخ (شروع):</label>
                 <input
+                  id="leave-start-date"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
@@ -118,8 +119,9 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">تا تاریخ (پایان):</label>
+                <label htmlFor="leave-end-date" className="block font-semibold text-slate-700 mb-1">تا تاریخ (پایان):</label>
                 <input
+                  id="leave-end-date"
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
@@ -130,8 +132,9 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">علت مرخصی / توضیحات:</label>
+              <label htmlFor="leave-reason" className="block font-semibold text-slate-700 mb-1">علت مرخصی / توضیحات:</label>
               <textarea
+                id="leave-reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 required
@@ -144,7 +147,7 @@ export const DoctorLeaveRequestModal: React.FC<DoctorLeaveRequestModalProps> = (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-800 space-y-1">
               <div className="font-semibold flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>قانون تقویم کلینیک (S17)</span>
+                <span>تأثیر مرخصی بر نوبت‌ها</span>
               </div>
               <p className="text-[11px] leading-relaxed text-amber-700">
                 در صورت وجود نوبت‌های قبلی در این بازه، منشی پس از تأیید مرخصی نوبت‌های متأثر را به نزدیک‌ترین ظرفیت خالی جابجا کرده یا با استرداد ۱۰۰٪ وجه لغو می‌نماید.

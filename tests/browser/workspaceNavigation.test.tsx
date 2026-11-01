@@ -130,6 +130,9 @@ describe('workspace overlays and demo invariants', () => {
     expect(await screen.findByText('AGY-10142')).toBeDefined();
     fireEvent.click(screen.getByRole('button',{name:'ابزارهای ارزیابی دمو'}));
     fireEvent.click(screen.getByRole('button',{name:/تزریق بیمار بدهکار/}));
+    expect(await screen.findByRole('heading',{name:'اتاق ویزیت در دسترس نیست'})).toBeDefined();
+    expect(screen.queryByText('AGY-10142')).toBeNull();
+    fireEvent.click(screen.getByRole('link',{name:'بازگشت به فضای کار من'}));
     expect(await screen.findByText(/قفل نرم فعال است/)).toBeDefined();
     expect(screen.queryByText('AGY-10142')).toBeNull();
     expect(screen.queryByRole('button',{name:/خروج از اتاق ویزیت/})).toBeNull();
