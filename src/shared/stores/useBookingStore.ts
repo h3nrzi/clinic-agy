@@ -70,6 +70,22 @@ const DEFAULT_STATE = {
   transactionRef: null as string | null,
 };
 
+/** Automatic defaults and local steps are not unfinished patient work. */
+export function hasUnfinishedBooking(booking: BookingState): boolean {
+  return (
+    booking.step !== 'CONFIRMED' &&
+    (booking.branchId !== DEFAULT_STATE.branchId ||
+      booking.serviceId !== DEFAULT_STATE.serviceId ||
+      booking.doctorId !== DEFAULT_STATE.doctorId ||
+      (booking.slotDateTime !== null &&
+        booking.slotDateTime !== booking.preselectedSlotDateTime) ||
+      booking.baseInsuranceId !== DEFAULT_STATE.baseInsuranceId ||
+      booking.suppInsuranceId !== DEFAULT_STATE.suppInsuranceId ||
+      booking.documents.length > 0 ||
+      booking.pendingDocumentReads > 0)
+  );
+}
+
 export const useBookingStore = create<BookingState>((set, get) => ({
   ...DEFAULT_STATE,
   draftRevision: 0,

@@ -61,6 +61,13 @@
 .booking-flow select {
   min-height: 44px;
 }
+.booking-flow .booking-icon-button {
+  min-width: 44px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .booking-flow button:focus-visible,
 .booking-flow input:focus-visible,
 .booking-flow select:focus-visible {
