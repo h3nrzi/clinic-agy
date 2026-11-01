@@ -1,0 +1,286 @@
+.finance-reports {
+  --report-tint: #edf8f8;
+  --report-emphasis: #08656d;
+  min-width: 0;
+  display: grid;
+  gap: 24px;
+  color: var(--ink);
+}
+.finance-report-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.finance-report-heading h2 {
+  font-size: 24px;
+  font-weight: 750;
+  margin: 8px 0;
+}
+.finance-report-heading p,
+.finance-section-heading p,
+.finance-summary-note,
+.finance-formula,
+.finance-table-help {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.finance-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand) !important;
+}
+.finance-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+.finance-settings span {
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.finance-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.finance-section-heading h3 {
+  font-weight: 750;
+  font-size: 16px;
+}
+.finance-section-heading > span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.finance-clinic-summary {
+  display: grid;
+  gap: 12px;
+}
+.finance-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.finance-kpis article {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  border-top: 3px solid var(--brand);
+}
+.finance-kpis h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.finance-kpis strong {
+  display: block;
+  font-size: clamp(18px, 1.6vw, 26px);
+  font-weight: 750;
+  margin: 12px 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.finance-kpis p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.finance-summary-note {
+  padding: 0 4px;
+}
+.finance-operations {
+  min-width: 0;
+  display: grid;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.finance-reports .analytics-heading h2 {
+  font-size: 20px;
+}
+.finance-reports .analytics-heading select {
+  min-height: 44px;
+  min-width: 160px;
+}
+.finance-scope {
+  border-right: 3px solid var(--brand);
+  padding: 8px 12px;
+  background: var(--report-tint);
+  color: var(--report-emphasis);
+  font-size: 13px;
+  font-weight: 700;
+}
+.finance-reports .analytics-metrics {
+  gap: 12px;
+}
+.finance-reports .analytics-metrics article {
+  padding: 16px;
+  border-top: 1px solid var(--line);
+}
+.finance-reports .analytics-metrics strong {
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+.finance-reports .analytics-metrics small,
+.finance-reports .analytics-heading p,
+.finance-reports .analytics-panel header p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+.finance-reports .analytics-panel header {
+  padding: 16px 20px;
+}
+.finance-reports .analytics-grid {
+  gap: 16px;
+}
+.finance-reports .branch-bars {
+  padding: 20px;
+}
+.finance-reports .branch-bars strong,
+.finance-reports .operations-list strong {
+  font-variant-numeric: tabular-nums;
+}
+.finance-daily-chart {
+  list-style: none;
+  padding: 16px 20px;
+  display: grid;
+  gap: 14px;
+}
+.finance-daily-chart li {
+  display: grid;
+  grid-template-columns: 110px minmax(30px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+.finance-daily-chart strong {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+.finance-daily-track {
+  height: 12px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.finance-daily-track > div {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 3px;
+}
+.finance-doctor-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+.finance-doctor-panel .finance-section-heading {
+  padding: 20px 20px 8px;
+}
+.finance-formula,
+.finance-table-help {
+  padding: 4px 20px;
+}
+.finance-table-help {
+  padding-bottom: 12px;
+}
+.finance-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+.finance-reports :is(select, .finance-table-scroll):focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 3px var(--brand);
+}
+.finance-reports table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.finance-reports table caption {
+  text-align: right;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 12px 20px;
+}
+.finance-reports table th,
+.finance-reports table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.finance-reports table thead {
+  background: var(--canvas);
+  color: var(--ink);
+}
+.finance-doctor-table {
+  min-width: 1320px;
+}
+.finance-doctor-table tbody th {
+  text-align: right;
+  font-weight: 700;
+}
+.finance-doctor-table :is(td, thead th):nth-child(n + 3) {
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+.finance-reports .finance-net {
+  color: var(--report-emphasis);
+  background: var(--report-tint);
+  font-weight: 750;
+}
+.finance-recent-table {
+  min-width: 640px;
+  text-align: right;
+}
+.finance-recent-table td:last-child {
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+.finance-status {
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 7px;
+  background: var(--canvas);
+  font-size: 12px;
+}
+@media (max-width: 1100px) {
+  .finance-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .finance-kpis {
+    grid-template-columns: 1fr;
+  }
+  .finance-report-heading h2 {
+    font-size: 21px;
+  }
+  .finance-daily-chart li {
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+  }
+  .finance-daily-track {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+  .finance-reports .analytics-heading label {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
