@@ -6,4 +6,3 @@ export function canOpenConsultation(appointment: Appointment, role: Role, userId
   // Preserve the existing legacy unassigned-doctor appointments, never another doctor's ID.
   return role === 'DOCTOR' && appointment.branchId === 'ONLINE' && (!appointment.doctorId || appointment.doctorId === userId);
 }
-

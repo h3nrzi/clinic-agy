@@ -1,5 +1,7 @@
 # UI transformation evaluation checkpoint
 
+> **راهنمای جاری:** [ارزیابی نهایی UI/UX و مسیریابی](ui-ux-routing/README.md). این سند سابقهٔ مرحلهٔ پیشین را نگه می‌دارد؛ دستورهای نوار تغییر نقش و تب‌های مقصدی پایین، متعلق به رابط قدیمی‌اند. اکنون انتخاب حساب فقط در `/login` و تغییر نقش با خروج/ورود است؛ ابزار دمو دکمهٔ شناور دارد. اعداد تست این سند تاریخی‌اند و پذیرش انسانی را ثابت نمی‌کنند.
+
 ## Implemented checkpoints
 1. Foundation: shared visual tokens, role-aware desktop sidebar, focus styles, reduced motion, table treatment and stacked mobile metrics.
 2. Financial overview: branch filtering, dated revenue bars, branch comparison, insurance coverage, appointment debt, clinic-wide wallet credit, recent appointment payments and operational counts.

@@ -234,7 +234,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     await waitFor(() => {
       expect(screen.getByText('ویزیت مجدد ۳ هفته بعد جهت بررسی پاسخ درمانی')).toBeDefined();
     });
-    expect(screen.getByText(/قانون محرمانگی داده‌های بالینی \(AC-05\)/)).toBeDefined();
+    expect(screen.getByText(/حریم خصوصی پرونده بالینی/)).toBeDefined();
 
     // Assert that diagnosis, examination findings, and complaints are NOT rendered to Secretary
     expect(screen.queryByText('سردرد میگرنی حاد')).toBeNull();
