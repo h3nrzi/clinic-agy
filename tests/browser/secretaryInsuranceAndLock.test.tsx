@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { renderApp, switchAccount } from '../helpers/appFixture';
 import { memoryDb } from '@/mocks/db/memoryDb';
 import { appointmentRepository } from '@/mocks/repositories/appointmentRepository';
+import { scheduleRepository } from '@/mocks/repositories/scheduleRepository';
 import { walletRepository } from '@/mocks/repositories/walletRepository';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { useScenarioStore } from '@/shared/stores/useScenarioStore';
@@ -15,6 +16,76 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     useAuthStore.getState().switchRole('PATIENT');
     useScenarioStore.getState().injectScenario('NORMAL');
     useBookingStore.getState().resetBooking();
+  });
+
+  it.each(['SECRETARY_TEHRAN', 'SECRETARY_ISFAHAN'] as const)('keeps %s branch, status and search filters explicit and resettable', async (role) => {
+    useAuthStore.getState().switchRole(role);
+    renderApp();
+    const ownBranch = screen.getByRole('button', { name: role === 'SECRETARY_TEHRAN' ? 'شعبه تهران + آنلاین' : 'شعبه اصفهان + آنلاین' });
+    expect(ownBranch.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'همه شعب' }));
+    fireEvent.click(screen.getByRole('button', { name: /قفل نرم فعال/ }));
+    expect(screen.getByText('AGY-10143')).toBeDefined();
+    expect(screen.queryByText('AGY-10142')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /همه نوبت‌ها/ }));
+    const search = screen.getByRole('searchbox', { name: 'جستجوی نوبت‌ها' });
+    fireEvent.change(search, { target: { value: 'AGY-10142' } });
+    expect(screen.getAllByRole('row')).toHaveLength(2);
+    fireEvent.change(search, { target: { value: 'no-result' } });
+    expect(screen.getByText('هیچ نوبتی با شرایط فیلتر انتخابی یافت نشد')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'پاک کردن جستجو و فیلترها' }));
+    expect(screen.getByText('AGY-10142')).toBeDefined();
+    expect(ownBranch.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('restores page scrolling after closing demo tools', () => {
+    useAuthStore.getState().switchRole('SECRETARY_TEHRAN');
+    document.body.style.overflow = 'auto';
+    renderApp();
+    fireEvent.click(screen.getByRole('button', { name: 'ابزارهای ارزیابی دمو' }));
+    expect(document.body.style.overflow).toBe('hidden');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(document.body.style.overflow).toBe('auto');
+    document.body.style.overflow = '';
+  });
+
+  it('closes only the top document layer with Escape and restores drawer focus', () => {
+    useAuthStore.getState().switchRole('SECRETARY_TEHRAN');
+    renderApp();
+    const originalOverflow = document.body.style.overflow;
+    const opener = screen.getByRole('button', { name: 'AGY-10142' });
+    opener.focus();
+    fireEvent.click(opener);
+    const documentButton = screen.getByRole('button', { name: /مشاهده و زوم/ });
+    documentButton.focus();
+    fireEvent.click(documentButton);
+    const zoom = screen.getByRole('dialog', { name: 'مشاهده و زوم مدارک پزشکی' });
+    const last = within(zoom).getByRole('link');
+    last.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(within(zoom).getByRole('button', { name: 'بزرگ‌نمایی' }));
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(last);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'مشاهده و زوم مدارک پزشکی' })).toBeNull();
+    expect(document.activeElement).toBe(documentButton);
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(screen.getByRole('dialog', { name: 'جزئیات پرونده و نوبت بیمار' })).toBeDefined();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+    expect(document.body.style.overflow).toBe(originalOverflow);
+  });
+
+  it.each(['SECRETARY_TEHRAN', 'SECRETARY_ISFAHAN'] as const)('reviews leave at the dedicated destination for %s', (role) => {
+    scheduleRepository.requestLeave({ doctorId: 'doc-1', doctorName: 'دکتر مریم احمدی', startDate: '2026-11-20', endDate: '2026-11-21', reason: 'مرخصی نمونه برای بررسی پذیرش' });
+    useAuthStore.getState().switchRole(role);
+    renderApp(role === 'SECRETARY_TEHRAN' ? '/secretary/tehran/leaves' : '/secretary/isfahan/leaves');
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    const request = screen.getByText(/مرخصی نمونه برای بررسی پذیرش/).closest('article')!;
+    fireEvent.click(within(request).getByRole('button', { name: role === 'SECRETARY_TEHRAN' ? 'تأیید مرخصی' : 'رد درخواست' }));
+    expect(within(request).getByText(role === 'SECRETARY_TEHRAN' ? 'تأییدشده' : 'ردشده')).toBeDefined();
+    expect(within(request).queryByRole('button', { name: 'تأیید مرخصی' })).toBeNull();
   });
 
   it('executes full FLOW-03 cycle: manual insurance correction produces debit, activates soft lock, and emergency unlock resolves it (AC-03 & AC-04)', async () => {
@@ -34,12 +105,12 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     fireEvent.click(editInsuranceBtns[0]);
 
     // Verify Insurance Edit Modal is open
-    expect(screen.getByText(/اصلاح دستی سهم بیمه — پنجره فریز روزانه/)).toBeDefined();
+    expect(screen.getByText(/اصلاح دستی سهم بیمه/)).toBeDefined();
     expect(screen.getByText(/نوبت: AGY-10142/)).toBeDefined();
 
     // 3. Apply AC-03 scenario: Zero out supplementary insurance coverage (revoking Dana insurance)
     const revokeSuppBtn = screen.getByRole('button', {
-      name: /ابطال بیمه تکمیلی \(سهم ۰ — سناریوی AC-03\)/,
+      name: /ابطال بیمه تکمیلی \(سهم ۰\)/,
     });
     fireEvent.click(revokeSuppBtn);
 
@@ -48,7 +119,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
     // Initial paid = 58,800 Toman
     // Delta = 58,800 - 196,000 = -137,200 Toman (Debit)
     expect(screen.getByText(/بدهکار به کلینیک/)).toBeDefined();
-    expect(screen.getByText(/هشدار قفل نرم \(AC-03\)/)).toBeDefined();
+    expect(screen.getByText(/هشدار قفل نرم/)).toBeDefined();
 
     // 4. Save and apply insurance correction
     const saveCorrectionBtn = screen.getByRole('button', { name: /ذخیره و اعمال اصلاحیه/ });
@@ -56,7 +127,7 @@ describe('WP-03: Secretary Desk, Insurance Correction & Soft Lock (FLOW-03, SCRE
 
     // Wait for modal to close and state to persist
     await waitFor(() => {
-      expect(screen.queryByText(/اصلاح دستی سهم بیمه — پنجره فریز روزانه/)).toBeNull();
+      expect(screen.queryByText(/اصلاح دستی سهم بیمه/)).toBeNull();
     });
 
     // 5. Verify Appointment in Secretary table now has DEBIT and Soft Lock

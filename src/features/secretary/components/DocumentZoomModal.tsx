@@ -1,5 +1,6 @@
 import { useDialogFocus } from '@/shared/hooks/useDialogFocus';
-import React, { useState } from 'react';
+import '../secretary.css';
+import React, { useState, useEffect } from 'react';
 import { PatientDocument } from '@/shared/types';
 import { formatDateTime } from '@/shared/utils/formatters';
 import { X, ZoomIn, ZoomOut, RotateCw, RefreshCw, FileText, Download } from 'lucide-react';
@@ -19,6 +20,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
 
+  useEffect(() => { setScale(1); setRotation(0); }, [isOpen, doc?.id]);
   if (!isOpen || !doc) return null;
 
   const handleZoomIn = () => setScale((s) => Math.min(s + 0.25, 3));
@@ -44,7 +46,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label="مشاهده و زوم مدارک پزشکی"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="document-viewer fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
@@ -66,7 +68,9 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
             <div className="flex items-center bg-slate-200/80 rounded-lg p-1 text-slate-700">
               <button
                 type="button"
+                disabled={scale >= 3}
                 onClick={handleZoomIn}
+                aria-label="بزرگ‌نمایی"
                 title="بزرگ‌نمایی"
                 className="p-1.5 hover:bg-white rounded-md transition"
               >
@@ -74,7 +78,9 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
               </button>
               <button
                 type="button"
+                disabled={scale <= 0.5}
                 onClick={handleZoomOut}
+                aria-label="کوچک‌نمایی"
                 title="کوچک‌نمایی"
                 className="p-1.5 hover:bg-white rounded-md transition"
               >
@@ -83,6 +89,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
               <button
                 type="button"
                 onClick={handleRotate}
+                aria-label="چرخش ۹۰ درجه"
                 title="چرخش ۹۰ درجه"
                 className="p-1.5 hover:bg-white rounded-md transition"
               >
@@ -91,6 +98,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
               <button
                 type="button"
                 onClick={handleReset}
+                aria-label="بازنشانی اندازه"
                 title="بازنشانی اندازه"
                 className="p-1.5 hover:bg-white rounded-md transition text-xs font-medium px-2"
               >
@@ -111,7 +119,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
         </div>
 
         {/* Image Display Area */}
-        <div className="flex-1 overflow-auto bg-slate-900/5 p-6 flex items-center justify-center min-h-[400px]">
+        <div className="document-canvas flex-1 overflow-auto bg-slate-900/5 p-6 flex items-center justify-center min-h-[400px]">
           <div
             className="transition-transform duration-200 ease-out origin-center"
             style={{
@@ -127,7 +135,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-600">
+        <footer className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-600">
           <span className="font-mono text-slate-500">شناسه مدرک: {doc.id}</span>
           <a
             href={doc.url}
@@ -138,7 +146,7 @@ export const DocumentZoomModal: React.FC<DocumentZoomModalProps> = ({
             <Download className="w-4 h-4" />
             <span>مشاهده در تب جدید</span>
           </a>
-        </div>
+        </footer>
       </div>
     </div>
   );

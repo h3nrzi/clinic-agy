@@ -96,7 +96,7 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="insurance-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
+      className="reception-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col">
         {/* Header */}
@@ -107,7 +107,7 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
             </div>
             <div>
               <h3 id="insurance-modal-title" className="text-sm font-bold text-slate-900">
-                اصلاح دستی سهم بیمه — پنجره فریز روزانه
+                اصلاح دستی سهم بیمه
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 <span>نوبت: {appointment.trackingCode}</span> • <span>بیمار: {appointment.patientName}</span>
@@ -117,6 +117,7 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
           <button
             type="button"
             onClick={onClose}
+            aria-label="بستن اصلاح سهم بیمه"
             className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
           >
             <X className="w-5 h-5" />
@@ -150,7 +151,7 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
           {/* Quick Presets for Demo & Testing */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-700">
-              کلیدهای میانبر تست (انطباق با سناریوهای پذیرش):
+              انتخاب سریع سهم بیمه:
             </label>
             <div className="flex flex-wrap gap-2">
               <button
@@ -161,7 +162,7 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
                 }}
                 className="text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-lg transition font-medium"
               >
-                ابطال بیمه تکمیلی (سهم ۰ — سناریوی AC-03)
+                ابطال بیمه تکمیلی (سهم ۰)
               </button>
 
               <button
@@ -287,21 +288,21 @@ export const InsuranceEditModal: React.FC<InsuranceEditModalProps> = ({
               <div className="mt-3 bg-rose-100/90 border border-rose-300 text-rose-800 rounded-xl p-2.5 text-xs flex items-center gap-2 font-medium">
                 <Lock className="w-4 h-4 shrink-0 text-rose-700" />
                 <span>
-                  <strong>هشدار قفل نرم (AC-03):</strong> این نوبت اینترنتی است؛ با ثبت این بدهکاری، دکمهٔ «ورود به اتاق ویزیت» در پنل بیمار مسدود شده و تا زمان تسویه یا بازگشایی اضطراری قفل می‌ماند.
+                  <strong>هشدار قفل نرم:</strong> این نوبت اینترنتی است؛ با ثبت این بدهکاری، دکمهٔ «ورود به اتاق ویزیت» در پنل بیمار مسدود شده و تا زمان تسویه یا بازگشایی اضطراری قفل می‌ماند.
                 </span>
               </div>
             )}
           </div>
 
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs flex items-center gap-2">
+            <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {isSuccess && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2">
+            <div role="status" className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
               <span>اصلاح سهم بیمه با موفقیت ثبت شد و مانده‌حساب بیمار به‌روزرسانی گردید.</span>
             </div>

@@ -49,7 +49,7 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label="جزئیات پرونده و نوبت بیمار"
-      className="fixed inset-0 z-40 overflow-hidden bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+      className="reception-drawer fixed inset-0 z-40 overflow-hidden bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
         <div className="w-screen max-w-md sm:max-w-lg bg-white shadow-2xl flex flex-col border-l border-slate-200">
@@ -244,8 +244,8 @@ export const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                           alt={doc.title}
                           className="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0"
                         />
-                        <div className="truncate">
-                          <div className="font-bold text-slate-800 truncate">{doc.title}</div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-800 break-words">{doc.title}</div>
                           <div className="text-[11px] text-slate-400 mt-0.5">
                             {formatDateTime(doc.uploadedAt)}
                           </div>

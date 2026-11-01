@@ -13,6 +13,11 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
+const appointmentStatusLabels: Record<Appointment['status'], string> = {
+  PENDING_PAYMENT: 'در انتظار پرداخت', CONFIRMED: 'تأییدشده', IN_CONSULTATION: 'در حال ویزیت',
+  COMPLETED: 'انجام‌شده', CANCELLED_BY_PATIENT: 'لغو توسط بیمار', CANCELLED_BY_CLINIC: 'لغو توسط کلینیک',
+};
+
 interface AppointmentTableProps {
   appointments: Appointment[];
   onOpenDrawer: (appointment: Appointment) => void;
@@ -43,20 +48,20 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="reception-table w-full text-right text-xs">
+        <table aria-label="فهرست نوبت‌های پذیرش" className="reception-table w-full text-right text-xs">
           <thead className="bg-slate-50/80 text-slate-600 border-b border-slate-200 font-bold select-none">
             <tr>
-              <th className="p-3.5 whitespace-nowrap">کد رهگیری</th>
-              <th className="p-3.5 whitespace-nowrap">نام بیمار</th>
-              <th className="p-3.5 whitespace-nowrap">پزشک معالج</th>
-              <th className="p-3.5 whitespace-nowrap">خدمت درمانی</th>
-              <th className="p-3.5 whitespace-nowrap">نوع نوبت</th>
-              <th className="p-3.5 whitespace-nowrap">زمان نوبت</th>
-              <th className="p-3.5 whitespace-nowrap">پرداختی اولیه</th>
-              <th className="p-3.5 whitespace-nowrap">وضعیت مالی</th>
-              <th className="p-3.5 whitespace-nowrap">قفل ویزیت</th>
-              <th className="p-3.5 whitespace-nowrap text-center">مدارک</th>
-              <th className="p-3.5 whitespace-nowrap text-center">عملیات</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">کد رهگیری</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">نام بیمار</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">پزشک معالج</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">خدمت درمانی</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">نوع نوبت</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">زمان نوبت</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">پرداختی اولیه</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">وضعیت مالی</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap">قفل ویزیت</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap text-center">مدارک</th>
+              <th scope="col" className="p-3.5 whitespace-nowrap text-center">عملیات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -93,7 +98,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   </td>
 
                   {/* Service */}
-                  <td data-label="خدمت" className="p-3.5 whitespace-nowrap text-slate-600 max-w-[180px] truncate">
+                  <td data-label="خدمت" className="p-3.5 text-slate-600 max-w-[180px] break-words">
                     {app.serviceName}
                   </td>
 
@@ -113,6 +118,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                   {/* Time */}
                   <td data-label="زمان" className="p-3.5 whitespace-nowrap text-slate-600">
                     {formatDateTime(app.dateTime)}
+                    <div className="text-slate-700 font-semibold mt-1">{appointmentStatusLabels[app.status]}</div>
                   </td>
 
                   {/* Initial Paid */}
@@ -179,6 +185,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onOpenDrawer(app)}
+                        aria-label={`مشاهده پرونده و مدارک ${app.trackingCode}`}
                         title="مشاهده پرونده و مدارک"
                         className="p-1.5 text-slate-600 hover:text-teal-700 hover:bg-slate-100 rounded-lg transition"
                       >
@@ -188,6 +195,7 @@ export const AppointmentTable: React.FC<AppointmentTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onOpenInsuranceModal(app)}
+                        aria-label={`اصلاح سهم بیمه ${app.trackingCode}`}
                         title="اصلاح سهم بیمه"
                         className="p-1.5 text-slate-600 hover:text-teal-700 hover:bg-slate-100 rounded-lg transition"
                       >
