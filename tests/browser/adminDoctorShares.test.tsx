@@ -45,7 +45,7 @@ describe('WP-05: Admin Financial Dashboard & Doctor Share Formula (FLOW-06, AC-0
     renderApp();
 
     // Switch to Settings Tab
-    const settingsTabBtn = screen.getByRole('button', { name: /تنظیمات درصد مالیات و جریمه لغو/ });
+    const settingsTabBtn = screen.getByRole('link', { name: 'تنظیمات مالی' });
     fireEvent.click(settingsTabBtn);
 
     expect(screen.getByText(/پارامترهای سیستمی مالیات و جریمه لغو نوبت/)).toBeDefined();

@@ -17,7 +17,7 @@ describe('WP-05: Doctor Shifts, Leave Requests & Secretary Approval (FLOW-05, S1
     expect(screen.getByTestId('doctor-dashboard')).toBeDefined();
 
     // Click "برنامهٔ شیفت‌های هفتگی و مرخصی‌ها" tab
-    const shiftsTabBtn = screen.getByRole('button', { name: /برنامهٔ شیفت‌های هفتگی و مرخصی‌ها/ });
+    const shiftsTabBtn = screen.getByRole('link', { name: 'شیفت‌ها و مرخصی' });
     fireEvent.click(shiftsTabBtn);
 
     // Verify shifts section rendered
@@ -70,7 +70,7 @@ describe('WP-05: Doctor Shifts, Leave Requests & Secretary Approval (FLOW-05, S1
     renderApp();
 
     // Switch to Doctor Leaves tab in Secretary Desk
-    const leavesSectionBtn = screen.getByRole('button', { name: /بررسی مرخصی پزشکان/ });
+    const leavesSectionBtn = screen.getByRole('link', { name: 'درخواست‌های مرخصی' });
     fireEvent.click(leavesSectionBtn);
 
     // Verify leave item appears

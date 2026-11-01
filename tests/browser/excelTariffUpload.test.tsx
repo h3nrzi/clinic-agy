@@ -42,7 +42,7 @@ describe('WP-05: 2-Sheet Excel Tariff Upload & Diff Preview (FLOW-06, AC-07, DEC
     expect(screen.getByTestId('financial-dashboard')).toBeDefined();
 
     // Switch to Excel Tariff Tab
-    const excelTabBtn = screen.getByRole('button', { name: /آپلود اکسل ۲ شیتی/ });
+    const excelTabBtn = screen.getByRole('link', { name: 'تعرفه‌ها و بیمه' });
     fireEvent.click(excelTabBtn);
 
     // Verify Tab 2 is active

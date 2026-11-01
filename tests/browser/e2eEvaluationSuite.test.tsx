@@ -32,7 +32,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     const bookingStartTime = Date.now();
 
     // Start New Booking
-    const newBookingTab = screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ });
+    const newBookingTab = screen.getByRole('link', { name: 'رزرو نوبت جدید' });
     fireEvent.click(newBookingTab);
 
     // Step 1: Branch selection -> Online Telemedicine
@@ -192,7 +192,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     expect(screen.getByTestId('financial-dashboard')).toBeDefined();
 
     // Switch to Excel Tariff Tab (Tab 2)
-    const excelTabBtn = screen.getByRole('button', { name: /آپلود اکسل ۲ شیتی/ });
+    const excelTabBtn = screen.getByRole('link', { name: 'تعرفه‌ها و بیمه' });
     fireEvent.click(excelTabBtn);
     expect(screen.getByText(/آپلود و تحلیل فایل اکسل تعرفه‌ها/)).toBeDefined();
 
@@ -216,7 +216,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     });
 
     // Switch back to Tab 1 (KPI & Doctor Shares)
-    const kpiTabBtn = screen.getByRole('button', { name: /داشبورد مالی و سهم پزشکان/ });
+    const kpiTabBtn = screen.getByRole('link', { name: 'نمای کلی و امور مالی' });
     fireEvent.click(kpiTabBtn);
 
     // Verify Doctor Share Calculations with 10% tax in Admin Dashboard (AC-08)
@@ -239,7 +239,7 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     renderApp();
 
     // Step 1: Open Wizard
-    fireEvent.click(screen.getByRole('button', { name: /رزرو نوبت جدید آنلاین/ }));
+    fireEvent.click(screen.getByRole('link', { name: 'رزرو نوبت جدید' }));
     expect(screen.getByRole('navigation', { name: 'مراحل رزرو نوبت' })).toBeDefined();
 
     // Select branch -> Online
@@ -289,7 +289,8 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     await switchAccount('PATIENT');
     expect(useAuthStore.getState().currentRole).toBe('PATIENT');
 
-    const toolbar = screen.getByLabelText('ابزارهای ارزیابی دمو');
+    fireEvent.click(screen.getByRole('button', { name: 'ابزارهای ارزیابی دمو' }));
+    const toolbar = screen.getByRole('dialog', { name: 'ابزارهای ارزیابی دمو' });
     const scenarioBtn = within(toolbar).getByRole('button', { name: /تزریق بیمار بدهکار/ });
     fireEvent.click(scenarioBtn);
 
@@ -299,13 +300,15 @@ describe('WP-06: Comprehensive E2E Evaluation & Acceptance Suite (FLOW-01 to FLO
     expect(screen.getByText(/قفل نرم فعال است/)).toBeDefined();
 
     // 4. Toggle scenario off
-    const toggleOffBtn = within(toolbar).getByRole('button', { name: /غیرفعال‌سازی بیمار بدهکار/ });
+    fireEvent.click(screen.getByRole('button', { name: 'ابزارهای ارزیابی دمو' }));
+    const toggleOffBtn = within(screen.getByRole('dialog', { name: 'ابزارهای ارزیابی دمو' })).getByRole('button', { name: /غیرفعال‌سازی بیمار بدهکار/ });
     fireEvent.click(toggleOffBtn);
     expect(useScenarioStore.getState().activeScenario).toBe('NORMAL');
 
     // 5. Test Factory Reset
     vi.spyOn(window, 'confirm').mockImplementation(() => true);
-    const resetBtn = within(toolbar).getByRole('button', { name: /ریست کارخانه‌ای داده‌ها/ });
+    fireEvent.click(screen.getByRole('button', { name: 'ابزارهای ارزیابی دمو' }));
+    const resetBtn = within(screen.getByRole('dialog', { name: 'ابزارهای ارزیابی دمو' })).getByRole('button', { name: /ریست کارخانه‌ای داده‌ها/ });
     fireEvent.click(resetBtn);
     expect(screen.getByText(/تمامی داده‌های دیتابیس به مقادیر اولیه کارخانه‌ای/)).toBeDefined();
   });
