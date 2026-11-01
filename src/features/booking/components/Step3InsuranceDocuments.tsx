@@ -278,7 +278,7 @@ export const Step3InsuranceDocuments: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => removeDocument(doc.id)}
-                    className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition"
+                    className="booking-icon-button text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition"
                     title="حذف فایل"
                     aria-label={`حذف ${doc.title}`}
                   >

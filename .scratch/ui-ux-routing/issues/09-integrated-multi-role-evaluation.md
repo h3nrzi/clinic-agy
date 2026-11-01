@@ -28,3 +28,9 @@
 [README جاری فارسی](../../../docs/ui-ux-routing/README.md) و [checkpoint۰۹](../../../docs/ui-ux-routing/ticket-09.md) راهنمای قابل تکرار، فایل/حساب مصنوعی، تمام لینک‌های۰۱–۰۸ و ممیزی پوشش دارند.۲۴۰/۲۴۰تست در۲۵فایل و build موفق؛ self-review ثبت است، independent two-axis review با هماهنگ‌کننده پس از ادغام۰۹ انجام می‌شود. تیک‌های بالا فقط بررسی source/خودکار و آماده‌سازی راهنما را ثبت می‌کنند؛ مشاهدهٔ بصری را تأیید نمی‌کنند. چهار ردیف مرکب ابزار موبایل/بصری/native/مرورگر عمداً باز مانده‌اند، هرچند بخش‌های خودکار و build آن‌ها موفق‌اند.
 
 مرورگر به‌دلیل رد صریح دسترسی localhost اجرا نشد؛ چهار viewport، keyboard/focus واقعی، contrast/scroll/هدف لمس/reduced motion و native beforeunload مسدود/در انتظار هستند. هیچ retry/workaround انجام نشده. پذیرش انسانی تا گزارش مشاهده‌های کاربر باز است؛ resolved به‌معنای تکمیل پیاده‌سازی است و پذیرش را فرض نمی‌کند. backend/استقرار/سرویس واقعی اضافه نشده است.
+
+## Final review resolution — 2026-11-01
+
+Both independent axes and their original reports are retained in [code-review](../../../docs/ui-ux-routing/code-review.md): Standards has 0 documented breaches and 1 nonblocking duplication judgement, resolved beside booking defaults; Spec has 1 P2 touch-width finding, resolved in source with the nonshrinking 44px icon control. No combined ranking or extra ticket was introduced. Main navigation active-link scope is clarified for independent consultation URLs.
+
+Existing App + Router guard/lifecycle tests were green before and after (17/17 in3 files); full suite240/240 in25 files (10.19s), build and working/range diff checks passed. The [final checkpoint](../../../docs/ui-ux-routing/ticket-09.md#final-review-resolution-checkpoint--2026-11-01) records commands, sizes, warnings and feature-by-feature evaluation additions. All prior evidence and open human/browser checks remain. First user action is npm run dev and the README demo-login flow. No browser retry/workaround or deployment occurred.

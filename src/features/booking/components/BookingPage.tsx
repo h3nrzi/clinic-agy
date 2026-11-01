@@ -5,23 +5,16 @@ import { useNavigate } from "react-router";
 import { BookingWizard } from "./BookingWizard";
 import { GatewaySimulator } from "@/features/payment-mock";
 import { PaymentSuccessConfirmation } from "@/features/patient-portal";
-import { useBookingStore } from "@/shared/stores/useBookingStore";
+import {
+  hasUnfinishedBooking,
+  useBookingStore,
+} from "@/shared/stores/useBookingStore";
 
 /** Route leaf: wizard, gateway and confirmation intentionally share one URL. */
 export function BookingPage() {
   const booking = useBookingStore();
   const { step, resetBooking } = booking;
-  const dirty =
-    step !== "CONFIRMED" &&
-    (booking.branchId !== "ONLINE" ||
-      booking.serviceId !== "srv-1" ||
-      booking.doctorId !== "doc-1" ||
-      (booking.slotDateTime !== null &&
-        booking.slotDateTime !== booking.preselectedSlotDateTime) ||
-      booking.baseInsuranceId !== "ins-base-tamin" ||
-      booking.suppInsuranceId !== "ins-supp-dana" ||
-      booking.documents.length > 0 ||
-      booking.pendingDocumentReads > 0);
+  const dirty = hasUnfinishedBooking(booking);
   useUnsavedChanges({ dirty, onDiscard: resetBooking });
   const navigate = useNavigate();
   useEffect(
