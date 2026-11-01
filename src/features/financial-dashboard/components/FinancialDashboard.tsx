@@ -1,3 +1,6 @@
+import { createPortal } from 'react-dom';
+import { useWorkspaceOverlay } from '@/shared/hooks/useWorkspaceOverlay';
+import './financial-operations.css';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAuthStore } from '@/shared/stores/useAuthStore';
 import { useScenarioStore } from '@/shared/stores/useScenarioStore';
@@ -15,7 +18,6 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  Coins,
   Download,
   FileSpreadsheet,
   FileUp,
@@ -46,6 +48,8 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
   // Excel state
   const [parseResult, setParseResult] = useState<ParseExcelResult | null>(null);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [applySuccessMessage, setApplySuccessMessage] = useState<string | null>(null);
   const [diffFilter, setDiffFilter] = useState<'ALL' | 'MODIFIED_OR_NEW' | 'MODIFIED' | 'NEW'>('ALL');
 
@@ -84,6 +88,15 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
   const [newShiftStartTime, setNewShiftStartTime] = useState('۰۹:۰۰');
   const [newShiftEndTime, setNewShiftEndTime] = useState('۱۳:۰۰');
   const [shiftError, setShiftError] = useState<string | null>(null);
+  const [shiftView, setShiftView] = useState<'WEEK' | 'LIST'>('WEEK');
+  const [shiftSaved, setShiftSaved] = useState(false);
+  const dayNames = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
+
+  useEffect(() => {
+    if (section !== 'SHIFTS') setShowAddShiftModal(false);
+  }, [section]);
+
+  const shiftDialogRef = useWorkspaceOverlay(() => setShowAddShiftModal(false), showAddShiftModal);
 
   // Repositories data
   const allDoctors = doctorRepository.getAll();
@@ -94,7 +107,11 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setFileName(file.name);
     setIsProcessingFile(true);
+    setFileError(null);
+    setParseResult(null);
+    setDiffFilter('ALL');
     setApplySuccessMessage(null);
     const reader = new FileReader();
 
@@ -104,18 +121,24 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
         const result = parseTariffWorkbook(buffer);
         setParseResult(result);
       } catch (err: any) {
-        alert('خطا در تحلیل فایل اکسل: ' + err.message);
+        setFileError('خطا در تحلیل فایل اکسل: ' + err.message);
       } finally {
         setIsProcessingFile(false);
       }
     };
 
+    reader.onerror = () => { setFileError('خواندن فایل انجام نشد. دوباره فایل را انتخاب کنید.'); setIsProcessingFile(false); };
     reader.readAsArrayBuffer(file);
+    e.target.value = '';
   };
 
   // Mock sample loader (DEC-FE-03)
   const handleLoadSampleExcel = () => {
+    setFileName('قالب نمونهٔ دوشیتی');
     setIsProcessingFile(true);
+    setFileError(null);
+    setParseResult(null);
+    setDiffFilter('ALL');
     setApplySuccessMessage(null);
     setTimeout(() => {
       const sampleBuffer = generateSampleTariffWorkbook();
@@ -164,7 +187,7 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
       cancellationPenaltyPercent: Number(penaltyPercent),
     });
     setSettingsSaved(true);
-    setTimeout(() => setSettingsSaved(false), 3000);
+
   };
 
   // Add Shift
@@ -187,6 +210,7 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
       });
 
       setShowAddShiftModal(false);
+      setShiftSaved(true);
     } catch (err: any) {
       setShiftError(err.message || 'خطا در ثبت شیفت');
     }
@@ -203,54 +227,34 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
   }, [parseResult, diffFilter]);
 
   return (
-    <div data-testid="financial-dashboard" className="space-y-6 text-slate-800">
-      {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-bold">
-            <Coins className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900">
-                مدیریت مالی و عملکرد کلینیک
-              </h2>
-              <span className="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full border border-indigo-200 font-semibold">
-                گزارش عملیاتی
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              مدیر مالی / ادمین: <strong>{currentUser.name}</strong> • گزارش کارکرد پزشکان، مدیریت تعرفه‌ها و برنامه‌ریزی شیفت‌ها
-            </p>
-          </div>
+    <div data-testid="financial-dashboard" className="financial-operations space-y-6 text-slate-800">
+      <header className="operation-page-header">
+        <div><p className="operation-eyebrow">امور مالی / {currentUser.name}</p>
+          <h2>{section === 'TARIFF_EXCEL' ? 'تعرفه‌ها و قراردادهای بیمه' : section === 'SHIFTS' ? 'برنامهٔ کاری پزشکان' : 'تنظیمات مالی کلینیک'}</h2>
+          <p>{section === 'TARIFF_EXCEL' ? 'فایل را دریافت کنید، تغییرات را مقایسه کنید و سپس اعمال کنید.' : section === 'SHIFTS' ? 'الگوی هفتگی شعب و ویزیت آنلاین را یکجا مرور کنید.' : 'پارامترهای مالیات و لغو نوبت را بازبینی و ذخیره کنید.'}</p>
         </div>
-
-        {/* Global Settings Quick Status */}
-        <div className="flex items-center gap-2 text-xs self-start md:self-auto">
-          <span className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1 font-semibold">
-            <Percent className="w-3.5 h-3.5 text-teal-600" />
-            <span>مالیات پزشک: {toPersianDigits(taxPercent)}٪</span>
-          </span>
-          <span className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1 font-semibold">
-            <Clock className="w-3.5 h-3.5 text-amber-600" />
-            <span>مرز لغو: {toPersianDigits(cancelHours)} ساعت ({toPersianDigits(penaltyPercent)}٪)</span>
-          </span>
+        <div className="operation-parameters" aria-label="تنظیمات ذخیره‌شده">
+          <span><Percent aria-hidden="true" size={16} />مالیات پزشک: {toPersianDigits(currentSettings.defaultTaxPercent)}٪</span>
+          <span><Clock aria-hidden="true" size={16} />مرز لغو: {toPersianDigits(currentSettings.cancellationThresholdHours)} ساعت ({toPersianDigits(currentSettings.cancellationPenaltyPercent)}٪)</span>
         </div>
-      </div>
+      </header>
 
       {/* --- TAB 2: 2-SHEET EXCEL TARIFF UPLOAD & DIFF (FLOW-06 / AC-07) --- */}
       {section === 'TARIFF_EXCEL' && (
         <div className="space-y-6 text-xs">
+          <ol className="operation-steps" aria-label="مراحل به‌روزرسانی تعرفه">
+            <li><span>۱</span> دریافت قالب</li><li><span>۲</span> انتخاب و مقایسهٔ فایل</li><li><span>۳</span> تأیید و اعمال</li>
+          </ol>
           {/* Upload Zone Card */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <FileSpreadsheet className="w-5 h-5 text-teal-600" />
+                  <FileSpreadsheet aria-hidden="true" className="w-5 h-5 text-teal-600" />
                   آپلود و تحلیل فایل اکسل تعرفه‌ها (ساختار ۲ شیتی استاندارد)
                 </h3>
                 <p className="text-slate-500 text-xs mt-0.5">
-                  شیت ۱: <strong className="text-slate-700">Services_BaseInsurance</strong> | شیت ۲: <strong className="text-slate-700">Supplementary_Rules</strong> (مطابق بند ۹.۲ سند مرجع محصول)
+                  شیت ۱: <strong className="text-slate-700">Services_BaseInsurance</strong> | شیت ۲: <strong className="text-slate-700">Supplementary_Rules</strong>
                 </p>
               </div>
 
@@ -260,57 +264,61 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
                   onClick={handleDownloadSampleWorkbook}
                   className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl font-bold transition shadow-xs text-xs"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download aria-hidden="true" className="w-4 h-4" />
                   <span>دانلود قالب اکسل نمونه (.xlsx)</span>
                 </button>
 
                 <button
                   type="button"
+                  disabled={isProcessingFile}
                   onClick={handleLoadSampleExcel}
                   className="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-xl font-bold transition shadow-xs text-xs"
                 >
-                  <FileUp className="w-4 h-4" />
+                  <FileUp aria-hidden="true" className="w-4 h-4" />
                   <span>بارگذاری داده نمونه ماک ۲ شیتی</span>
                 </button>
               </div>
             </div>
 
             {/* Drag & Drop File Input Area */}
-            <div className="border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-2xl p-6 text-center transition bg-slate-50/50">
+            <div className="operation-upload border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-2xl p-6 text-center transition bg-slate-50/50">
               <input
                 type="file"
                 id="excel-tariff-file"
                 accept=".xlsx, .xls"
                 onChange={handleFileUpload}
-                className="hidden"
+                className="operation-file-input"
+                disabled={isProcessingFile}
               />
               <label
                 htmlFor="excel-tariff-file"
-                className="cursor-pointer flex flex-col items-center justify-center gap-2.5"
+                className="operation-file-label cursor-pointer flex flex-col items-center justify-center gap-2.5"
               >
                 <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center shadow-xs">
-                  <Upload className="w-6 h-6" />
+                  <Upload aria-hidden="true" className="w-6 h-6" />
                 </div>
                 <div>
                   <span className="font-bold text-teal-700 text-sm hover:underline">
                     برای انتخاب فایل اکسل کلیک کنید
                   </span>
                   <span className="text-slate-500 text-xs block mt-0.5">
-                    یا فایل اکسل تعرفه‌ها را در این کادر بکشید و رها کنید (فرمت .xlsx)
+                    فایل دوشیتی با فرمت .xlsx یا .xls؛ پیش از اعمال، پیش‌نمایش نمایش داده می‌شود.
                   </span>
                 </div>
               </label>
             </div>
 
+            {fileName && <p className="operation-file-name">فایل انتخاب‌شده: <strong>{fileName}</strong></p>}
+            {fileError && <p role="alert" className="operation-error">{fileError}</p>}
             {isProcessingFile && (
-              <div className="p-3 bg-teal-50 text-teal-800 rounded-xl text-center font-semibold animate-pulse">
-                در حال خواندن و تحلیل شیت‌های اکسل با کتابخانه SheetJS...
+              <div role="status" className="p-3 bg-teal-50 text-teal-800 rounded-xl text-center font-semibold animate-pulse">
+                در حال خواندن و تحلیل فایل اکسل…
               </div>
             )}
 
             {applySuccessMessage && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2 font-semibold">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <div role="status" className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2 font-semibold">
+                <CheckCircle2 aria-hidden="true" className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>{applySuccessMessage}</span>
               </div>
             )}
@@ -325,8 +333,8 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
                     <h4 className="font-bold text-slate-900 text-sm">
                       پیش‌نمایش تغییرات و جدول مقایسه‌ای Diff
                     </h4>
-                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold text-[11px]">
-                      ساختار معتبر ✅
+                    <span className="bg-slate-50 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full font-bold text-[11px]">
+                      {parseResult.isValid ? 'ساختار معتبر' : 'ساختار نامعتبر'}
                     </span>
                   </div>
                   <p className="text-slate-500 text-xs mt-0.5">
@@ -336,57 +344,49 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
 
                 {/* Filter and Apply Button */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-                    <button
-                      type="button"
-                      onClick={() => setDiffFilter('ALL')}
-                      className={`px-2.5 py-1 rounded-lg transition ${
-                        diffFilter === 'ALL'
-                          ? 'bg-white text-slate-900 shadow-xs'
-                          : 'text-slate-600'
-                      }`}
-                    >
-                      همه ({toPersianDigits(parseResult.diffItems.length)})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDiffFilter('MODIFIED_OR_NEW')}
-                      className={`px-2.5 py-1 rounded-lg transition ${
-                        diffFilter === 'MODIFIED_OR_NEW'
-                          ? 'bg-white text-slate-900 shadow-xs'
-                          : 'text-slate-600'
-                      }`}
-                    >
-                      فقط تغییرات
-                    </button>
+                  <div className="operation-switch" role="group" aria-label="فیلتر تغییرات">
+                    {([['ALL', `همه (${toPersianDigits(parseResult.diffItems.length)})`], ['MODIFIED_OR_NEW', 'فقط تغییرات'], ['MODIFIED', 'ویرایش‌شده'], ['NEW', 'جدید']] as const).map(([filter, label]) => (
+                      <button key={filter} type="button" aria-pressed={diffFilter === filter} onClick={() => setDiffFilter(filter)}>{label}</button>
+                    ))}
                   </div>
 
                   <button
                     type="button"
                     onClick={handleApplyTariffChanges}
+                    disabled={!parseResult.isValid || isProcessingFile || !!applySuccessMessage || !parseResult.diffItems.some(item => item.action !== 'UNCHANGED')}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold transition shadow-sm flex items-center gap-1.5"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 aria-hidden="true" className="w-4 h-4" />
                     <span>تأیید و اعمال نهایی در سیستم</span>
                   </button>
                 </div>
               </div>
 
+              {parseResult.isValid && <>
+                <div className="operation-summary" aria-label="خلاصهٔ مقایسه">
+                  <div><span>جدید</span><strong>{toPersianDigits(parseResult.diffItems.filter(item => item.action === 'NEW').length)}</strong></div>
+                  <div><span>ویرایش‌شده</span><strong>{toPersianDigits(parseResult.diffItems.filter(item => item.action === 'MODIFIED').length)}</strong></div>
+                  <div><span>بدون تغییر</span><strong>{toPersianDigits(parseResult.diffItems.filter(item => item.action === 'UNCHANGED').length)}</strong></div>
+                </div>
+                {!parseResult.diffItems.some(item => item.action !== 'UNCHANGED') && <p role="status" className="operation-empty">تغییری نسبت به تعرفه‌های فعلی وجود ندارد.</p>}
+              </>}
+              {!parseResult.isValid && <div role="alert" className="operation-error"><strong>فایل قابل اعمال نیست؛ ساختار دو شیت را اصلاح و دوباره انتخاب کنید.</strong><ul>{parseResult.errors.map(error => <li key={error}>{error}</li>)}</ul></div>}
               {/* Diff Items Table */}
-              <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                <table className="w-full text-right border-collapse text-xs">
+              <div className="operation-comparison border border-slate-200 rounded-xl" role="region" aria-label="جدول مقایسه تعرفه‌ها" tabIndex={0}>
+                <table className="w-full text-right border-collapse text-xs"><caption className="sr-only">مقایسهٔ مقدار قبلی و جدید خدمات و بیمه؛ مبالغ به تومان</caption>
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
-                      <th className="py-2.5 px-3">نوع تغییر</th>
-                      <th className="py-2.5 px-3">دسته‌بندی</th>
-                      <th className="py-2.5 px-3">کد خدمت / بیمه</th>
-                      <th className="py-2.5 px-3">عنوان خدمت یا شرکت بیمه</th>
-                      <th className="py-2.5 px-3">شعبه / قلمرو</th>
-                      <th className="py-2.5 px-3">مقدار قبلی در سامانه</th>
-                      <th className="py-2.5 px-3">مقدار جدید در فایل اکسل</th>
+                      <th scope="col" className="py-2.5 px-3">نوع تغییر</th>
+                      <th scope="col" className="py-2.5 px-3">دسته‌بندی</th>
+                      <th scope="col" className="py-2.5 px-3">کد خدمت / بیمه</th>
+                      <th scope="col" className="py-2.5 px-3">عنوان خدمت یا شرکت بیمه</th>
+                      <th scope="col" className="py-2.5 px-3">شعبه / قلمرو</th>
+                      <th scope="col" className="py-2.5 px-3">مقدار قبلی در سامانه</th>
+                      <th scope="col" className="py-2.5 px-3">مقدار جدید در فایل اکسل</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {parseResult.isValid && filteredDiffItems.length === 0 && <tr><td colSpan={7} className="operation-empty">ردیفی برای این فیلتر وجود ندارد.</td></tr>}
                     {filteredDiffItems.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50/70 transition">
                         <td className="py-2.5 px-3">
@@ -439,11 +439,11 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-teal-600" />
+                  <Calendar aria-hidden="true" className="w-5 h-5 text-teal-600" />
                   مدیریت الگوی هفتگی شیفت پزشکان (تهران، اصفهان، آنلاین)
                 </h3>
                 <p className="text-slate-500 text-xs mt-0.5">
-                  تنظیم ظرفیت‌های نوبت‌دهی و پیشگیری سیستمی از تداخل بازه‌های زمانی (S17)
+                  زمان هر شیفت و شعبه را پیش از ثبت بررسی کنید؛ تداخل‌های زمانی هنگام ثبت کنترل می‌شوند.
                 </p>
               </div>
 
@@ -455,43 +455,37 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
                 }}
                 className="bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 transition shadow-sm text-xs"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle aria-hidden="true" className="w-4 h-4" />
                 <span>تعریف شیفت کاری جدید</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {allShifts.map((shift) => (
-                <div
-                  key={shift.id}
-                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-900 text-sm">{shift.dayName}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${
-                        shift.branchId === 'ONLINE'
-                          ? 'bg-teal-50 text-teal-700 border-teal-200'
-                          : 'bg-blue-50 text-blue-700 border-blue-200'
-                      }`}
-                    >
-                      {shift.branchId === 'ONLINE'
-                        ? 'ویزیت آنلاین'
-                        : shift.branchId === 'TEHRAN'
-                        ? 'شعبه تهران'
-                        : 'شعبه اصفهان'}
-                    </span>
+            <div className="operation-toolbar">
+              <div role="group" aria-label="نمایش شیفت‌ها" className="operation-switch">
+                <button type="button" aria-pressed={shiftView === 'WEEK'} onClick={() => setShiftView('WEEK')}>تقویم هفتگی</button>
+                <button type="button" aria-pressed={shiftView === 'LIST'} onClick={() => setShiftView('LIST')}>فهرست شیفت‌ها</button>
+              </div>
+              <p>{toPersianDigits(allShifts.length)} شیفت تعریف‌شده • الگوی تکرارشوندهٔ هفتگی</p>
+            </div>
+            {shiftSaved && <p role="status" className="operation-success">شیفت با موفقیت ثبت شد و در برنامه نمایش داده می‌شود.</p>}
+            {allShifts.length === 0 && <p className="operation-empty">هنوز شیفتی تعریف نشده است. با «تعریف شیفت کاری جدید» برنامه را آغاز کنید.</p>}
+            <div className={shiftView === 'WEEK' ? 'shift-week' : 'shift-list'} >
+              {(shiftView === 'WEEK' ? dayNames.map((day, index) => ({ day, shifts: allShifts.filter(shift => shift.dayOfWeek === index) })) : [{ day: '', shifts: allShifts }]).map(group => (
+                <section className="shift-day" key={group.day}>
+                  {group.day && <h4>{group.day}<span>{toPersianDigits(group.shifts.length)} شیفت</span></h4>}
+                  {group.shifts.length === 0 && <p className="shift-day-empty">بدون شیفت</p>}
+                  <div role="list" aria-label={shiftView === 'WEEK' ? `شیفت‌های ${group.day}` : 'فهرست شیفت‌ها'}>
+                  {group.shifts.map(shift => (
+                    <article role="listitem" className="shift-card" key={shift.id}>
+                      {shiftView === 'LIST' && <strong>{shift.dayName}</strong>}
+                      <div className="shift-card-doctor">{shift.doctorName}</div>
+                      <span className="shift-branch">{shift.branchId === 'ONLINE' ? 'ویزیت آنلاین' : shift.branchId === 'TEHRAN' ? 'شعبه تهران' : 'شعبه اصفهان'}</span>
+                      <div className="shift-time"><Clock aria-hidden="true" size={14} /><span dir="ltr">{toPersianDigits(shift.startTime)} – {toPersianDigits(shift.endTime)}</span></div>
+                      {!shift.isActive && <span>غیرفعال</span>}
+                    </article>
+                  ))}
                   </div>
-
-                  <div className="font-bold text-slate-800">{shift.doctorName}</div>
-
-                  <div className="text-slate-600 flex items-center gap-1.5 pt-1 border-t border-slate-200">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>
-                      {toPersianDigits(shift.startTime)} الی {toPersianDigits(shift.endTime)}
-                    </span>
-                  </div>
-                </div>
+                </section>
               ))}
             </div>
           </div>
@@ -500,80 +494,80 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
 
       {/* --- TAB 4: CLINIC SETTINGS (DEC-FE-03, S17) --- */}
       {section === 'SETTINGS' && (
-        <div className="space-y-6 text-xs max-w-2xl">
+        <div className="operation-settings space-y-6">
           <form
             onSubmit={handleSaveSettings}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5"
+            className="operation-settings-form bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5"
           >
             <div className="border-b border-slate-100 pb-3">
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <Settings className="w-5 h-5 text-teal-600" />
+                <Settings aria-hidden="true" className="w-5 h-5 text-teal-600" />
                 پارامترهای سیستمی مالیات و جریمه لغو نوبت
               </h3>
               <p className="text-slate-500 text-xs mt-0.5">
-                مقادیر مصوب اولیه مطابق DEC-FE-03 و بند ۹.۳ سند مرجع محصول
+                واحد و محدودهٔ مجاز هر مقدار کنار همان فیلد آمده است. تغییرات پس از ذخیره اعمال می‌شوند.
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="operation-setting-fields space-y-4">
               <div>
-                <label className="block font-bold text-slate-800 mb-1">
-                  درصد پیش‌فرض کسورات مالیاتی سهم پزشک (Tax Percent):
+                <label htmlFor="finance-tax" className="block font-bold text-slate-800 mb-1">
+                  درصد پیش‌فرض کسورات مالیاتی سهم پزشک:
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
                     min="0"
                     max="100"
-                    value={taxPercent}
-                    onChange={(e) => setTaxPercent(Number(e.target.value))}
+                    id="finance-tax" aria-describedby="finance-tax-unit" value={taxPercent}
+                    onChange={(e) => { setTaxPercent(Number(e.target.value)); setSettingsSaved(false); }}
                     required
                     className="w-32 px-3 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 font-bold text-sm"
                   />
-                  <span className="text-slate-600 font-bold">درصد (پیش‌فرض ۱۰٪ مصوب DEC-FE-03)</span>
+                  <span id="finance-tax-unit" className="text-slate-600 font-bold">درصد • ۰ تا ۱۰۰ (پیش‌فرض ۱۰٪)</span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 mb-1">
-                  مرز زمانی لغو رایگان توسط بیمار (Cancellation Threshold Hours):
+                <label htmlFor="finance-cancel" className="block font-bold text-slate-800 mb-1">
+                  مرز زمانی لغو رایگان توسط بیمار:
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
                     min="1"
                     max="72"
-                    value={cancelHours}
-                    onChange={(e) => setCancelHours(Number(e.target.value))}
+                    id="finance-cancel" aria-describedby="finance-cancel-unit" value={cancelHours}
+                    onChange={(e) => { setCancelHours(Number(e.target.value)); setSettingsSaved(false); }}
                     required
                     className="w-32 px-3 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 font-bold text-sm"
                   />
-                  <span className="text-slate-600 font-bold">ساعت (پیش‌فرض ۱۲ ساعت)</span>
+                  <span id="finance-cancel-unit" className="text-slate-600 font-bold">ساعت • ۱ تا ۷۲ (پیش‌فرض ۱۲ ساعت)</span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 mb-1">
-                  درصد جریمهٔ لغو دیرهنگام (Cancellation Penalty Percent):
+                <label htmlFor="finance-penalty" className="block font-bold text-slate-800 mb-1">
+                  درصد جریمهٔ لغو دیرهنگام:
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
                     min="0"
                     max="100"
-                    value={penaltyPercent}
-                    onChange={(e) => setPenaltyPercent(Number(e.target.value))}
+                    id="finance-penalty" aria-describedby="finance-penalty-unit" value={penaltyPercent}
+                    onChange={(e) => { setPenaltyPercent(Number(e.target.value)); setSettingsSaved(false); }}
                     required
                     className="w-32 px-3 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 font-bold text-sm"
                   />
-                  <span className="text-slate-600 font-bold">درصد (پیش‌فرض ۵۰٪ جریمه کلینیک)</span>
+                  <span id="finance-penalty-unit" className="text-slate-600 font-bold">درصد • ۰ تا ۱۰۰ (پیش‌فرض ۵۰٪)</span>
                 </div>
               </div>
             </div>
 
             {settingsSaved && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2 font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <div role="status" className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2 font-semibold">
+                <CheckCircle2 aria-hidden="true" className="w-4 h-4 text-emerald-600" />
                 <span>تنظیمات با موفقیت ذخیره و در محاسبات سامانه اعمال شد.</span>
               </div>
             )}
@@ -589,29 +583,32 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
       )}
 
       {/* Add Shift Modal */}
-      {showAddShiftModal && (
+      {showAddShiftModal && createPortal(
         <div
+          ref={shiftDialogRef}
+          tabIndex={-1}
           role="dialog"
+          aria-labelledby="add-shift-title"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+          className="financial-shift-dialog fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
         >
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-right text-xs space-y-4">
-            <h4 className="font-bold text-slate-900 text-sm pb-2 border-b border-slate-100">
+            <h4 id="add-shift-title" className="font-bold text-slate-900 text-sm pb-2 border-b border-slate-100">
               تعریف شیفت کاری جدید برای پزشک
             </h4>
 
             {shiftError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-2 font-semibold">
-                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <div id="shift-error" role="alert" className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl flex items-center gap-2 font-semibold">
+                <AlertTriangle aria-hidden="true" className="w-4 h-4 text-rose-600 shrink-0" />
                 <span>{shiftError}</span>
               </div>
             )}
 
             <form onSubmit={handleCreateShift} className="space-y-3">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">پزشک معالج:</label>
+                <label htmlFor="shift-doctor" className="block font-semibold text-slate-700 mb-1">پزشک معالج:</label>
                 <select
-                  value={newShiftDoctorId}
+                  id="shift-doctor" aria-invalid={!!shiftError} aria-describedby={shiftError ? "shift-error" : undefined} value={newShiftDoctorId}
                   onChange={(e) => setNewShiftDoctorId(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800"
                 >
@@ -624,9 +621,9 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">شعبه یا سامانه:</label>
+                <label htmlFor="shift-branch" className="block font-semibold text-slate-700 mb-1">شعبه یا سامانه:</label>
                 <select
-                  value={newShiftBranch}
+                  id="shift-branch" value={newShiftBranch}
                   onChange={(e) => setNewShiftBranch(e.target.value as BranchId)}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800"
                 >
@@ -637,9 +634,9 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">روز هفته:</label>
+                <label htmlFor="shift-day" className="block font-semibold text-slate-700 mb-1">روز هفته:</label>
                 <select
-                  value={newShiftDay}
+                  id="shift-day" aria-invalid={!!shiftError} aria-describedby={shiftError ? "shift-error" : undefined} value={newShiftDay}
                   onChange={(e) => setNewShiftDay(Number(e.target.value))}
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800"
                 >
@@ -655,10 +652,10 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">ساعت شروع:</label>
+                  <label htmlFor="shift-start" className="block font-semibold text-slate-700 mb-1">ساعت شروع:</label>
                   <input
                     type="text"
-                    value={newShiftStartTime}
+                    id="shift-start" value={newShiftStartTime}
                     onChange={(e) => setNewShiftStartTime(e.target.value)}
                     required
                     placeholder="۰۹:۰۰"
@@ -666,10 +663,10 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">ساعت پایان:</label>
+                  <label htmlFor="shift-end" className="block font-semibold text-slate-700 mb-1">ساعت پایان:</label>
                   <input
                     type="text"
-                    value={newShiftEndTime}
+                    id="shift-end" value={newShiftEndTime}
                     onChange={(e) => setNewShiftEndTime(e.target.value)}
                     required
                     placeholder="۱۳:۰۰"
@@ -695,7 +692,7 @@ const FinancialDashboardContent: React.FC<FinancialDashboardProps> = ({ section 
               </div>
             </form>
           </div>
-        </div>
+        </div>, document.body
       )}
     </div>
   );
