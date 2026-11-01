@@ -4,6 +4,7 @@ import { dashboardPath } from "./roleRoutes";
 import { WorkspaceSidebar } from "@/app/layout/WorkspaceSidebar";
 import { DemoTools } from "@/app/layout/DemoTools";
 import { Navbar } from "@/app/layout/Navbar";
+import { UnsavedChangesProvider } from "@/shared/navigation/UnsavedChanges";
 import type { Role } from "@/shared/types";
 
 export function WorkspaceRoute({ role }: { role: Role }) {
@@ -24,19 +25,21 @@ export function WorkspaceRoute({ role }: { role: Role }) {
       </main>
     );
   return (
-    <div
-      className="workspace-shell min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900"
-      dir="rtl"
-    >
-      <Navbar />
-      <WorkspaceSidebar />
-      <div className="flex-1 workspace-content" id="workspace">
-        <Outlet />
+    <UnsavedChangesProvider>
+      <div
+        className="workspace-shell min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900"
+        dir="rtl"
+      >
+        <Navbar />
+        <WorkspaceSidebar />
+        <div className="flex-1 workspace-content" id="workspace">
+          <Outlet />
+        </div>
+        <DemoTools />
+        <footer className="public-footer workspace-footer">
+          کلینیک سلامت آژی • محیط نمایشی با داده‌های ساختگی
+        </footer>
       </div>
-      <DemoTools />
-      <footer className="public-footer workspace-footer">
-        کلینیک سلامت آژی • محیط نمایشی با داده‌های ساختگی
-      </footer>
-    </div>
+    </UnsavedChangesProvider>
   );
 }

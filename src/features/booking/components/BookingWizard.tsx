@@ -19,16 +19,16 @@ export const BookingWizard: React.FC<Props> = ({ onCancel }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
+    <div className="booking-panel bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
       {onCancel && (
         <button
           type="button"
           onClick={onCancel}
-          className="absolute left-4 top-4 z-10 text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition"
+          className="booking-cancel px-4 py-2"
           aria-label="انصراف از رزرو"
           title="انصراف از رزرو"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5" aria-hidden="true" /><span>انصراف از رزرو</span>
         </button>
       )}
       <BookingWizardHeader currentStep={step} onStepClick={handleStepClick} />
