@@ -23,6 +23,7 @@ export const Step3InsuranceDocuments: React.FC = () => {
     baseInsuranceId,
     suppInsuranceId,
     documents,
+    pendingDocumentReads,
     setBaseInsuranceId,
     setSuppInsuranceId,
     addDocument,
@@ -64,8 +65,13 @@ export const Step3InsuranceDocuments: React.FC = () => {
       return;
     }
 
+    const draftRevision = useBookingStore.getState().startDocumentRead();
     const reader = new FileReader();
     reader.onload = () => {
+      // A pending file read must never populate an abandoned or another account’s booking.
+      const current = useBookingStore.getState();
+      if (!current.finishDocumentRead(draftRevision) || current.step === 'CONFIRMED') return;
+
       const newDoc: MedicalDocument = {
         id: `doc-${Date.now()}`,
         title: file.name,
@@ -75,6 +81,12 @@ export const Step3InsuranceDocuments: React.FC = () => {
       };
       addDocument(newDoc);
     };
+    reader.onerror = () => {
+      if (useBookingStore.getState().finishDocumentRead(draftRevision)) {
+        setUploadError('خواندن فایل انجام نشد. لطفاً فایل را دوباره انتخاب کنید.');
+      }
+    };
+    reader.onabort = () => { useBookingStore.getState().finishDocumentRead(draftRevision); };
     reader.readAsDataURL(file);
     e.target.value = '';
   };
@@ -96,10 +108,10 @@ export const Step3InsuranceDocuments: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Base Insurance Dropdown */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-700">
+            <label htmlFor="booking-base-insurance" className="block text-xs font-semibold text-slate-700">
               بیمه پایه (درمانی اول)
             </label>
-            <select
+            <select id="booking-base-insurance"
               value={baseInsuranceId}
               onChange={(e) => setBaseInsuranceId(e.target.value)}
               className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -114,10 +126,10 @@ export const Step3InsuranceDocuments: React.FC = () => {
 
           {/* Supplementary Insurance Dropdown */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-700">
+            <label htmlFor="booking-supp-insurance" className="block text-xs font-semibold text-slate-700">
               بیمه تکمیلی (درمانی دوم)
             </label>
-            <select
+            <select id="booking-supp-insurance"
               value={suppInsuranceId}
               onChange={(e) => setSuppInsuranceId(e.target.value)}
               className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
@@ -135,10 +147,10 @@ export const Step3InsuranceDocuments: React.FC = () => {
         </div>
 
         {/* Real-time Calculation Breakdown Card (AC-01) */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+        <div className="booking-invoice bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200">
             <span className="text-xs font-bold text-slate-800">
-              ریز محاسبات مالی پلکانی (فرمول مصوب بند ۹.۱)
+              ریز محاسبات مالی پلکانی
             </span>
             <span className="text-[11px] text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
               محاسبه آنی
@@ -199,20 +211,21 @@ export const Step3InsuranceDocuments: React.FC = () => {
           </p>
         </div>
 
+        {pendingDocumentReads > 0 && <p role="status">در حال آماده‌سازی {toPersianDigits(pendingDocumentReads)} مدرک…</p>}
         {uploadError && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-xl flex items-center gap-2">
+          <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3 rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{uploadError}</span>
           </div>
         )}
 
-        <div className="border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-xl p-5 text-center transition bg-white">
+        <div className="booking-upload border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-xl p-5 text-center transition bg-white">
           <input
             type="file"
             id="medical-doc-input"
             accept="image/png,image/jpeg,image/jpg,application/pdf"
             onChange={handleFileUpload}
-            className="hidden"
+            aria-describedby="booking-upload-help"
           />
           <label
             htmlFor="medical-doc-input"
@@ -222,9 +235,9 @@ export const Step3InsuranceDocuments: React.FC = () => {
               <UploadCloud className="w-5 h-5" />
             </div>
             <div className="text-xs font-semibold text-slate-700">
-              کلیک برای انتخاب فایل یا کشیدن و رها کردن مدرک پزشکی
+              انتخاب مدرک پزشکی (اختیاری)
             </div>
-            <div className="text-[11px] text-slate-400">
+            <div id="booking-upload-help" className="text-[11px] text-slate-400">
               فرمت‌های مجاز: JPG, PNG, PDF (حداکثر ۵ مگابایت)
             </div>
           </label>
@@ -267,6 +280,7 @@ export const Step3InsuranceDocuments: React.FC = () => {
                     onClick={() => removeDocument(doc.id)}
                     className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition"
                     title="حذف فایل"
+                    aria-label={`حذف ${doc.title}`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -278,7 +292,7 @@ export const Step3InsuranceDocuments: React.FC = () => {
       </section>
 
       {/* Action Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+      <div className="booking-actions">
         <button
           type="button"
           onClick={() => setStep(2)}

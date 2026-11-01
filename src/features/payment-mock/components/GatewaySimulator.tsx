@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from '@/shared/navigation/UnsavedChanges';
 import React, { useState, useEffect } from 'react';
 import { useBookingStore } from '@/shared/stores/useBookingStore';
 import { tariffRepository } from '@/mocks/repositories/tariffRepository';
@@ -35,6 +36,11 @@ export const GatewaySimulator: React.FC = () => {
   const [dynamicPassword, setDynamicPassword] = useState('۷۴۸۳۹');
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
   const [otpSentNotice, setOtpSentNotice] = useState(false);
+
+  useUnsavedChanges({
+    dirty: cardNumber !== '۶۰۳۷-۹۹۱۸-۴۳۲۱-۵۵۴۴' || cvv2 !== '۵۴۳' || expMonth !== '۰۸' || expYear !== '۰۶' || dynamicPassword !== '۷۴۸۳۹',
+    onDiscard: () => useBookingStore.getState().resetBooking(),
+  });
 
   // 10-minute countdown timer
   const [secondsLeft, setSecondsLeft] = useState(600);
@@ -88,8 +94,9 @@ export const GatewaySimulator: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      <p className="booking-demo-note">پرداخت نمایشی است. از اطلاعات آماده استفاده کنید؛ شماره کارت یا رمز واقعی وارد نکنید. یکی از نتیجه‌های زیر را برای ادامه انتخاب کنید.</p>
       {/* Mock Shaparak Header */}
-      <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white rounded-2xl p-6 shadow-lg border border-teal-500/30">
+      <div className="booking-gateway-header bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white rounded-2xl p-6 shadow-lg border border-teal-500/30">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center">
@@ -100,7 +107,7 @@ export const GatewaySimulator: React.FC = () => {
                 <span className="text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded">
                   شبیه‌ساز درگاه شاپرک
                 </span>
-                <span className="text-xs text-slate-300">پرداخت الکترونیک امن</span>
+                <span className="text-xs text-slate-300">محیط پرداخت نمایشی</span>
               </div>
               <h2 className="text-lg font-bold mt-1">سامانه پرداخت اینترنتی به پرداخت ملت / شاپرک</h2>
             </div>
@@ -119,7 +126,7 @@ export const GatewaySimulator: React.FC = () => {
       {/* Gateway Card Form Container */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-md p-6 space-y-6">
         {/* Merchant & Order Info */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+        <div className="booking-payment-details grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
           <div>
             <span className="text-slate-400 block text-[11px]">پذیرنده:</span>
             <span className="font-bold text-slate-800">کلینیک سلامت زنجیره‌ای آژی</span>
@@ -140,22 +147,23 @@ export const GatewaySimulator: React.FC = () => {
 
         {/* Error notification if failure was simulated */}
         {gatewayError && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-xl flex items-center gap-3 text-xs">
+          <div role="alert" className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-xl flex items-center gap-3 text-xs">
             <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
             <div className="flex-1 font-semibold">{gatewayError}</div>
           </div>
         )}
 
         {/* Card Inputs */}
-        <div className="space-y-4 max-w-lg mx-auto">
+        <div className="booking-payment-form space-y-4 max-w-lg mx-auto">
           {/* Card Number */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-700">
+            <label htmlFor="gateway-cardNumber" className="block text-xs font-semibold text-slate-700">
               شماره کارت بانکی ۱۶ رقمی
             </label>
             <div className="relative">
               <input
                 type="text"
+                id="gateway-cardNumber"
                 value={cardNumber}
                 onChange={(e) => setCardNumber(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-center font-mono text-sm font-bold text-slate-800 tracking-wider focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -168,9 +176,10 @@ export const GatewaySimulator: React.FC = () => {
           {/* CVV2 and Expiration */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-700">کد امنیتی CVV2</label>
+              <label htmlFor="gateway-cvv2" className="block text-xs font-semibold text-slate-700">کد امنیتی CVV2</label>
               <input
                 type="text"
+                id="gateway-cvv2"
                 value={cvv2}
                 onChange={(e) => setCvv2(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-center font-mono text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -183,6 +192,7 @@ export const GatewaySimulator: React.FC = () => {
               <div className="flex items-center gap-1.5" dir="ltr">
                 <input
                   type="text"
+                  aria-label="ماه انقضا"
                   value={expMonth}
                   onChange={(e) => setExpMonth(e.target.value)}
                   placeholder="ماه"
@@ -191,6 +201,7 @@ export const GatewaySimulator: React.FC = () => {
                 <span className="text-slate-400 font-bold">/</span>
                 <input
                   type="text"
+                  aria-label="سال انقضا"
                   value={expYear}
                   onChange={(e) => setExpYear(e.target.value)}
                   placeholder="سال"
@@ -202,10 +213,11 @@ export const GatewaySimulator: React.FC = () => {
 
           {/* Dynamic Password */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-700">رمز دوم پویا (OTP)</label>
+            <label htmlFor="gateway-dynamicPassword" className="block text-xs font-semibold text-slate-700">رمز دوم پویا (OTP)</label>
             <div className="flex items-center gap-2">
               <input
                 type="text"
+                id="gateway-dynamicPassword"
                 value={dynamicPassword}
                 onChange={(e) => setDynamicPassword(e.target.value)}
                 className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-2 text-center font-mono text-sm font-bold text-slate-800 tracking-wider focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -229,7 +241,7 @@ export const GatewaySimulator: React.FC = () => {
         {/* Evaluation Simulation Buttons (INT-03) */}
         <div className="pt-6 border-t border-slate-200 space-y-3">
           <div className="text-center text-xs text-slate-500 font-medium">
-            کلیدهای کنترل ارزیابی فرانت‌اند (Deterministic Mock Trigger):
+            نتیجهٔ پرداخت نمایشی را انتخاب کنید:
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

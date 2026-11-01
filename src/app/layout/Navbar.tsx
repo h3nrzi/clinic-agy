@@ -1,3 +1,4 @@
+import { useGuardedAction } from "@/shared/navigation/UnsavedChanges";
 import { useNavigate } from "react-router";
 import { useBookingStore } from "@/shared/stores/useBookingStore";
 import { useEffect, useState } from "react";
@@ -11,6 +12,7 @@ export const Navbar = () => {
   const { currentUser, currentRole } = useAuthStore();
   const { statusNotice, dismissNotice } = useScenarioStore();
   const navigate = useNavigate();
+  const runGuardedAction = useGuardedAction();
   const [panel, setPanel] = useState<"account" | "notifications" | null>(null);
   const [, refresh] = useState(0);
   useEffect(() => memoryDb.subscribe(() => refresh((v) => v + 1)), []);
@@ -80,11 +82,13 @@ export const Navbar = () => {
             </button>
             <button
               className="topbar-icon"
-              onClick={() => {
-                navigate("/", { flushSync: true });
-                useBookingStore.getState().resetBooking();
-                useAuthStore.getState().logout();
-              }}
+              onClick={() =>
+                runGuardedAction(() => {
+                  navigate("/", { flushSync: true });
+                  useBookingStore.getState().resetBooking();
+                  useAuthStore.getState().logout();
+                })
+              }
             >
               خروج از حساب
             </button>

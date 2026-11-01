@@ -38,7 +38,7 @@ export const PaymentSuccessConfirmation: React.FC<Props> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="booking-success max-w-2xl mx-auto space-y-6">
       {/* Success Card */}
       <div className="bg-white rounded-2xl border border-emerald-200 shadow-md p-6 sm:p-8 text-center space-y-5">
         <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
